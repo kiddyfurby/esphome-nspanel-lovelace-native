@@ -4,14 +4,14 @@ namespace esphome {
 namespace nspanel_lovelace {
 
 Entity::Entity(const std::string &entity_id) :
-    state_(generic_type::unknown) {
+    state_(entity_state::unknown) {
   assert(!entity_id.empty());
   this->set_entity_id(entity_id);
   enable_notifications_ = true;
 }
 Entity::Entity(const std::string &entity_id, const char *type) : 
     type_(type), type_overridden_(true),
-    state_(generic_type::unknown) {
+    state_(entity_state::unknown) {
   assert(!entity_id.empty() && type != nullptr);
   this->set_entity_id(entity_id);
   enable_notifications_ = true;
@@ -45,7 +45,10 @@ void Entity::set_entity_id(const std::string &entity_id) {
   this->entity_id_ = entity_id;
 
   if (!this->type_overridden_) {
-    this->set_type(get_entity_type(this->entity_id_));
+    if (!this->set_type(get_entity_type(this->entity_id_))) {
+      // todo: should we be setting a fallback type?
+      this->type_ = entity_type::text;
+    }
   }
 
   // extract the text from iText entities
@@ -61,8 +64,8 @@ void Entity::set_entity_id(const std::string &entity_id) {
 const char *Entity::get_type() const { return this->type_; }
 
 bool Entity::is_type(const char *type) const {
-  if (type == this->type_) return true;
   if (type == nullptr || this->type_ == nullptr) return false;
+  if (type == this->type_) return true;
   return std::strcmp(this->type_, type) == 0;
 }
 
@@ -92,6 +95,11 @@ void Entity::set_state(const std::string &state) {
   }
 }
 
+bool Entity::has_attribute(ha_attr_type attr) const {
+  auto it = attributes_.find(attr);
+  return it != attributes_.end();
+}
+
 const std::string &Entity::get_attribute(ha_attr_type attr, const std::string &default_value) const {
   auto it = attributes_.find(attr);
   return it == attributes_.end() ? default_value : it->second;
@@ -117,6 +125,27 @@ void Entity::set_attribute(ha_attr_type attr, const std::string &value) {
         std::stoi(value),
         {static_cast<double>(min_mireds), static_cast<double>(max_mireds)},
         {0, 100}))));
+  } else if (attr == ha_attr_type::supported_color_modes ||
+      attr == ha_attr_type::effect_list ||
+      attr == ha_attr_type::preset_modes ||
+      attr == ha_attr_type::swing_modes ||
+      attr == ha_attr_type::fan_modes ||
+      attr == ha_attr_type::hvac_modes ||
+      // todo: this list can contain any value (including ones with commas),
+      //       convert_python_arr_str does not support this scenario!
+      attr == ha_attr_type::source_list ||
+      attr == ha_attr_type::options) {
+    // todo: remove this when esphome starts sending properly formatted array strings
+    this->attributes_[attr] = convert_python_arr_str(value);
+    
+    // only store the first 14 effects as additonal ones will never be rendered
+    if (attr == ha_attr_type::effect_list) {
+      auto split_pos = find_nth_of(',', 15, this->attributes_[attr]);
+      if (split_pos != std::string::npos) {
+        this->attributes_[attr] = this->attributes_[attr].substr(0, split_pos);
+      }
+    }
+    this->attributes_[attr].shrink_to_fit();
   } else {
     this->attributes_[attr] = value;
   }

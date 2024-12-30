@@ -1,7 +1,6 @@
 #pragma once
 
-
-#include "config.h"
+#include "defines.h"
 #include "entity.h"
 #include "helpers.h"
 #include "page_item_visitor.h"
@@ -85,19 +84,19 @@ protected:
 class PageItem_Icon : public IRender, public ISetRenderInvalid {
 public:
   PageItem_Icon(IHaveRenderInvalid *const parent);
-  PageItem_Icon(IHaveRenderInvalid *const parent, const std::string &icon_default_value);
+  PageItem_Icon(IHaveRenderInvalid *const parent, const icon_char_t *icon_default_value);
   PageItem_Icon(IHaveRenderInvalid *const parent, const uint16_t icon_default_color);
-  PageItem_Icon(IHaveRenderInvalid *const parent, const std::string &icon_default_value, const uint16_t icon_default_color);
+  PageItem_Icon(IHaveRenderInvalid *const parent, const icon_char_t *icon_default_value, const uint16_t icon_default_color);
   virtual ~PageItem_Icon() {}
 
-  const std::string &get_icon_value() const { return this->icon_value_; }
+  const icon_char_t *get_icon_value() const { return this->icon_value_; }
   bool is_icon_value_overridden() const { return this->icon_value_overridden_; }
   uint16_t get_icon_color() const { return this->icon_color_; }
   std::string get_icon_color_str() const {
     return std::to_string(this->icon_color_);
   }
 
-  virtual void set_icon_value(const std::string &value);
+  virtual void set_icon_value(const icon_char_t *value);
   virtual void reset_icon_value();
   virtual void set_icon_color(const uint16_t color);
   virtual void set_icon_color(const std::array<uint8_t, 3> rgb);
@@ -105,10 +104,10 @@ public:
 
 protected:
   // mdi:0625 (help-circle-outline)
-  std::string icon_default_value_;
+  const icon_char_t *icon_default_value_;
   // default HA blue
   uint16_t icon_default_color_;
-  std::string icon_value_;
+  const icon_char_t *icon_value_;
   uint16_t icon_color_;
   bool icon_value_overridden_;
   bool icon_color_overridden_;
@@ -177,13 +176,13 @@ public:
       const std::string &uuid, std::shared_ptr<Entity> entity);
   StatefulPageItem(
       const std::string &uuid, std::shared_ptr<Entity> entity,
-      const std::string &icon_default_value);
+      const icon_char_t *icon_default_value);
   StatefulPageItem(
       const std::string &uuid, std::shared_ptr<Entity> entity,
       const uint16_t icon_default_color);
   StatefulPageItem(
       const std::string &uuid, std::shared_ptr<Entity> entity,
-      const std::string &icon_default_value, 
+      const icon_char_t *icon_default_value, 
       const uint16_t icon_default_color);
   virtual ~StatefulPageItem();
 
@@ -215,9 +214,12 @@ protected:
   static void state_on_off_fn(StatefulPageItem *me);
   static void state_binary_sensor_fn(StatefulPageItem *me);
   static void state_cover_fn(StatefulPageItem *me);
-  // static void state_button_fn(StatefulPageItem *me);
-  // static void state_scene_fn(StatefulPageItem *me);
-  // static void state_script_fn(StatefulPageItem *me);
+  static void state_climate_fn(StatefulPageItem *me);
+  static void state_media_fn(StatefulPageItem *me);
+  static void state_sun_fn(StatefulPageItem *me);
+  static void state_alarm_fn(StatefulPageItem *me);
+  static void state_lock_fn(StatefulPageItem *me);
+  static void state_weather_fn(StatefulPageItem *me);
 
   // output: type~internalName~icon~iconColor~
   std::string &render_(std::string &buffer) override;

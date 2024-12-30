@@ -18,7 +18,11 @@
 #include "esphome/components/api/custom_api_device.h"
 
 #ifdef USE_ESP_IDF
+#include <driver/gpio.h>
 #include "esphome/components/uart/uart_component_esp_idf.h"
+#ifdef USE_NSPANEL_TFT_UPLOAD
+#include <esp_http_client.h>
+#endif
 #else
 #ifdef USE_NSPANEL_TFT_UPLOAD
 #include <HTTPClient.h>
@@ -97,13 +101,13 @@ public:
 #endif
   
   void on_page_item_added_callback(const std::shared_ptr<PageItem> &item);
+  void set_language(const std::string &language) { this->language_ = language; }
   void set_display_timeout(uint16_t timeout);
   void set_display_active_dim(uint8_t active);
   void set_display_inactive_dim(uint8_t inactive);
   // Note: this can be used without parameters to update the display without changing the levels
   void set_display_dim(uint8_t inactive = UINT8_MAX, uint8_t active = UINT8_MAX);
   void set_weather_entity_id(const std::string &weather_entity_id) { this->weather_entity_id_ = weather_entity_id; }
-  void set_day_of_week_override(DayOfWeekMap::dow dow, const std::array<const char *, 2> &value);
 
   void render_screensaver() { this->render_page_(render_page_option::screensaver); }
   void render_next_page() { this->render_page_(render_page_option::next); }
@@ -118,7 +122,16 @@ public:
    * Softreset the Nextion
    */
   void soft_reset_display() {
-    this->send_nextion_command_("rest"); // doesnt exist/work!?
+    // this->send_nextion_command_("rest"); // only for stock FW
+#ifdef USE_ESP_IDF
+    gpio_set_level(GPIO_NUM_4, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    gpio_set_level(GPIO_NUM_4, 0);
+#else
+    digitalWrite(GPIO4, 1);
+    delay(1000);
+    digitalWrite(GPIO4, 0);
+#endif
   }
 
   float get_setup_priority() const override { return setup_priority::DATA; }
@@ -148,8 +161,9 @@ protected:
   void init_display_(int baud_rate);
 #ifdef USE_NSPANEL_TFT_UPLOAD
   uint16_t recv_ret_string_(std::string &response, uint32_t timeout, bool recv_flag);
-  void start_reparse_mode_();
-  void exit_reparse_mode_();
+#ifdef USE_ARDUINO
+  void set_reparse_mode_(bool active);
+#endif
 #endif
   void send_nextion_command_(const std::string &command);
 
@@ -177,12 +191,19 @@ protected:
   void render_page_(render_page_option d);
   void render_current_page_();
   void render_item_update_(Page *page);
+  void render_popup_notify_page_(const std::string &internal_id,
+    const std::string &heading, const std::string &message, uint16_t timeout = 0U,
+    const std::string &btn1_text = "", const std::string &btn2_text = "");
   void render_popup_page_(const std::string &internal_id);
-  void render_popup_page_update_(const std::string &internal_id);
-  void render_popup_page_update_(StatefulPageItem *entity);
+  bool render_popup_page_update_(const std::string &internal_id);
+  bool render_popup_page_update_(StatefulPageItem *entity);
   void render_light_detail_update_(StatefulPageItem *entity);
   void render_timer_detail_update_(StatefulPageItem *entity);
   void render_cover_detail_update_(StatefulPageItem *item);
+  void render_climate_detail_update_(StatefulPageItem *item);
+  void render_climate_detail_update_(Entity *entity, const std::string &uuid = "");
+  void render_input_select_detail_update_(StatefulPageItem *item);
+  void render_fan_detail_update_(StatefulPageItem *item);
 
 #ifdef USE_TIME
   void setup_time_();
@@ -219,12 +240,10 @@ protected:
   void on_weather_forecast_update_(std::string entity_id, std::string forecast_json);
   void send_weather_update_command_();
   std::string weather_entity_id_;
-  DayOfWeekMap day_of_week_map_;
-  bool day_of_week_map_overridden_ = false;
+  std::string language_;
 
   std::queue<std::string> command_queue_;
   unsigned long command_last_sent_ = 0;
-  unsigned int update_baud_rate_ = 921600;
 
   bool button_press_timeout_set_ = false;
   std::string button_press_uuid_;
@@ -248,17 +267,19 @@ protected:
   std::string command_buffer_;
 
 #ifdef USE_NSPANEL_TFT_UPLOAD
+  uint32_t default_baud_rate_ = 0;
+  uint32_t update_baud_rate_ = 115200;
   bool is_updating_ = false;
   bool reparse_mode_ = false;
-  int content_length_ = 0;
-  int tft_size_ = 0;
+  uint32_t content_length_ = 0;
+  size_t tft_size_ = 0;
+  bool upload_first_chunk_sent_ = false;
 #ifdef USE_ESP_IDF
-  int upload_range_(const std::string &url, int range_start);
+  int upload_by_chunks_(esp_http_client_handle_t http_client, uint32_t &range_start);
 #else // USE_ARDUINO
   uint8_t *transfer_buffer_ = nullptr;
   size_t transfer_buffer_size_;
-  bool upload_first_chunk_sent_ = false;
-  int upload_by_chunks_(HTTPClient *http, const std::string &url, int range_start);
+  int upload_by_chunks_(HTTPClient *http, const std::string &url, uint32_t &range_start);
 #endif
   bool upload_end_(bool successful);
 #endif // USE_NSPANEL_TFT_UPLOAD

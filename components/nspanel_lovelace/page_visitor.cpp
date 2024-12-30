@@ -28,6 +28,14 @@ bool InheritancePageVisitor::visit(AlarmCard &page) {
   return visit(static_cast<Card &>(page)) ||
           visit(static_cast<Page &>(page));
 }
+bool InheritancePageVisitor::visit(ThermoCard &page) {
+  return visit(static_cast<Card &>(page)) ||
+          visit(static_cast<Page &>(page));
+}
+bool InheritancePageVisitor::visit(MediaCard &page) {
+  return visit(static_cast<Card &>(page)) ||
+          visit(static_cast<Page &>(page));
+}
 
 } // namespace nspanel_lovelace
 } // namespace esphome

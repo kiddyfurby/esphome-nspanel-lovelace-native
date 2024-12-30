@@ -14,13 +14,9 @@ esphome:
 esp32:
   board: esp32dev
   framework:
+    # ESP-IDF is requried so we can access the NSPanel PSRAM
+    # which is on non-standard pins. ESP-IDF also uses less flash than Arduino!
     type: esp-idf
-    sdkconfig_options:
-      ## These are required to allow access to the PSRAM
-      ## NOTE: This is temporary and will be removed in a 
-      ##       future release when the build script is improved
-      CONFIG_D0WD_PSRAM_CLK_IO: '5'
-      CONFIG_D0WD_PSRAM_CS_IO: '18'
 
 external_components:
   - source:
@@ -32,18 +28,20 @@ external_components:
 
 nspanel_lovelace:
   id: nspanel
-  ## Options: eu, us-l, us-p
-  # model: eu
   sleep_timeout: 10
   # locale:
-    # day_of_week_map:
-    #   sunday: ['Sun', 'Sunday']
-    #   monday: ['Mon', 'Monday']
-    #   tuesday: ['Tue', 'Tuesday']
-    #   wednesday: ['Wed', 'Wednesday']
-    #   thursday: ['Thu', 'Thursday']
-    #   friday: ['Fri', 'Friday']
-    #   saturday: ['Sat', 'Saturday']
+    ## This can be the ISO 639‑1 language code or a custom json file (i.e. custom.json).
+    ## Currently supported languages:
+    ##   - English/English (GB): en.json, en-GB.json
+    ##   - Czech/Čeština: cs.json
+    ##   - German/Deutsch: de.json
+    ##   - Greek/Νέα Ελληνικά: el.json
+    ##   - Spanish/Español: es.json
+    ## NOTE: This feature is in beta so the translation keys and values could change at any time!
+    ##       Any custom translation files you create will need to be kept in sync with the the files on the repo
+    ##       https://github.com/olicooper/esphome-nspanel-lovelace-native/tree/dev/components/nspanel_lovelace/translations
+    # language: en
+    # temperature_unit: celcius
   screensaver:
     time_id: homeassistant_time
     ## For formatting options see: https://cplusplus.com/reference/ctime/strftime/
@@ -117,6 +115,12 @@ nspanel_lovelace:
       sleep_timeout: 60
       title: Home Alarm
       alarm_entity_id: alarm_control_panel.home_alarm
+
+    - type: cardThermo
+      sleep_timeout: 60
+      title: Thermo Ecobee
+      thermo_entity_id: climate.ecobee
+      # temperature_unit: fahrenheit
 
 logger:
   baud_rate: 115200

@@ -18,7 +18,15 @@ For the GUI, this project relies on the HMI TFT firmware from the [ESPHome NSPan
 The firmware version reported by the screen needs to be `52` or `53` for it to be compatible with this project.
 If you don't have the custom HMI TFT firmware installed already you will need to upload the appropriate `nspanel*.tft` file from `v4.3.3` of the project which can be [found here](https://github.com/joBr99/nspanel-lovelace-ui/tree/v4.3.3/HMI). You can upload the correct TFT firmware after installing this component on the ESP32 by using the `upload_tft` service (seen in the [basic example](basic-example.yaml#L60)) exposed by the device in HomeAssistant.
 
+# Configuration
+
 A basic configuration can be found in the [basic example](basic-example.yaml), but you'll probably also want to look at the [advanced example](advanced-example.yaml) which shows the features currently available. This is loosely based on the appdaemon configuration format ([found here](https://github.com/joBr99/nspanel-lovelace-ui/blob/v4.3.3/appdaemon/apps-simple.yaml)) to make it easier to transition to this native ESPHome solution, but please don't expect this to translate exactly as it is not possible to make it work in the exact same way given the limitations of the ESP32.
+
+### Icons
+
+- Icon values can be an icon name or hex value (e.g. `hex:E549`). A list of icons can be found here: https://docs.nspanel.pky.eu/icon-cheatsheet.html
+- Icon colours need to be a 16-bit number (0-65535) representing a `rgb565` colour code. This website can be used to select your colour https://chrishewett.com/blog/true-rgb565-colour-picker/ - then you take the rgb565 hex value and convert it to a number (e.g. `#ce79` -> `52857`).
+
 
 # Help Needed!
 
@@ -29,10 +37,10 @@ There are many UI components missing and the [python build script](components/ns
 
 Currently the following features work:
 - Screensaver with time, date, weather and status icon display
-- Support for `cardGrid`, `cardGrid2`, `cardEntities`, `cardQR`, `cardAlarm`
+- Support for `cardGrid`, `cardGrid2`, `cardEntities`, `cardQR`, `cardAlarm`, `cardThermo`, `cardMedia`
 - Most entity types should display on cards. Lights, switches, sensors and scenes have been tested to work, with additional support for the `popupLight` and `popupTimer` pages.
 
-There is currently no support for cards such as: `cardMedia`, `cardThermo`, `cardPower` etc. but these are planned for the future.
+There is currently no support for these cards: `cardPower`. `cardUnlock`, `cardChart` - but these are planned for the future.
 Please see the [HMI readme](https://github.com/joBr99/nspanel-lovelace-ui/tree/main/HMI) for more info on the cards mentioned above.
 
 PRs to expand the functionality or fix bugs are very welcome!
@@ -41,7 +49,7 @@ PRs to expand the functionality or fix bugs are very welcome!
 
 ### 1. Weather forecast is not displayed on the screensaver when using Home Assistant 2024.4 or later
 
-This issue is due to the `forcast` attribute being removed from weather entities. There is currently no alternative way to fetch this data with the current ESPHome functionality but I hope to get this fixed (see [this feature request](https://github.com/esphome/feature-requests/issues/2703)).
+This issue is due to the `forecast` attribute being removed from weather entities. There is currently no alternative way to fetch this data with the current ESPHome functionality but I hope to get this fixed (see [this feature request](https://github.com/esphome/feature-requests/issues/2703)).
 More info on the issue can be [found here](https://github.com/olicooper/esphome-nspanel-lovelace-native/issues/8).
 
 As a workaround, please add the following to your Home Assistant configuration (changing `weather.home` to your actual weather entity_id) then update the `weather` `entity_id` in your esphome config to the `unique_id` seen below (i.e. `sensor.weather_forecast_daily`) - thanks @CultusMechanicus for this snippet!

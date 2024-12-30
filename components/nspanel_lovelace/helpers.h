@@ -5,6 +5,7 @@
 #include <array>
 #include <cassert>
 #include <cmath>
+#include <cstring>
 #include <ctype.h>
 #include <esp_heap_caps.h>
 #include <math.h>
@@ -51,6 +52,13 @@ inline void replace_all(
   s.swap(buf);
 }
 
+inline void replace_all(std::string &s, const char oldChar, const char newChar) {
+  size_t pos = std::string::npos;
+  while ((pos = s.find(oldChar, pos + 1)) != std::string::npos) {
+    s.at(pos) = newChar;
+  }
+}
+
 inline const char* value_or_empty(const char* s) {
   return s == nullptr ? "" : s; 
 }
@@ -74,11 +82,9 @@ inline double value_or_default(const std::string &str, double default_value) {
     ? default_value : std::stod(str);
 }
 
-inline bool starts_with(const std::string &input, const std::string &value) {
-  return input.rfind(value, 0) == 0;
-}
-
 inline bool iso8601_to_tm(const char* iso8601_string, tm &t) {
+  if (iso8601_string == nullptr) return false;
+  
 	// note: don't need to know the timezone
 	static constexpr const char* format = "%d-%d-%dT%d:%d:%d";// "%d-%d-%dT%d:%d:%d+%d:%d";
 
@@ -179,15 +185,57 @@ inline bool char_printable(const char value) {
   return value >= 0x20 && value <= 0x7e;
 }
 
-inline void split_str(char delimiter, const std::string &str, std::vector<std::string> &array) {
+inline static constexpr bool str_equal(const char *a, const char *b) {
+  return a == b || (a != nullptr && b != nullptr && std::strcmp(a, b) == 0);
+}
+
+inline void split_str(char delimiter, const std::string &str, std::vector<std::string> &array, uint16_t max_items = UINT16_MAX) {
   size_t pos_start = 0, pos_end = 0;
   std::string item;
+  uint16_t item_count = 0;
   while ((pos_end = str.find(delimiter, pos_start)) != std::string::npos) {
+    if (item_count == max_items) return;
     item = str.substr(pos_start, pos_end - pos_start);
     pos_start = pos_end + 1;
     if (!item.empty()) { array.push_back(item); }
+    item_count++;
   }
   if (!item.empty()) { array.push_back(str.substr(pos_start)); }
+}
+
+inline size_t find_nth_of(char delimiter, uint16_t count, const std::string &str) {
+  size_t pos = std::string::npos;
+  if (count == 0) return pos;
+
+  uint16_t idx = 0;
+  do {
+    pos = str.find(delimiter, pos + 1);
+    idx++;
+  } while (pos != std::string::npos && idx < count);
+
+  return pos;
+}
+
+// Takes the string representation of a Python array (enums, strings etc) and extracts the 
+// values to a new string separated by delimiter.
+// todo: remove this when esphome starts sending properly formatted array strings
+inline std::string convert_python_arr_str(const std::string &str, const char delimiter = ',') {
+  if (str.empty()) return str;
+  size_t pos_start = std::string::npos, pos_end = pos_start;
+  std::string tmp;
+  do {
+      pos_start = str.find('\'', pos_end + 1);
+      if (pos_start == std::string::npos) {
+        if (tmp.back() == delimiter) tmp.pop_back();
+        break;
+      }
+      pos_end = str.find('\'', pos_start + 1);
+      if (pos_end == std::string::npos) break;
+      // ignore empty entries
+      if (pos_end - pos_start - 1 == 0) continue;
+      tmp.append(str.substr(pos_start + 1, pos_end - pos_start - 1)).append(1, delimiter);
+  } while (true);
+  return tmp.empty() ? str : tmp;
 }
 
 inline std::string to_string(const std::vector<std::string> &array, 
@@ -220,20 +268,6 @@ inline std::string to_string(const std::vector<uint8_t> &array,
     str_array.push_back(std::to_string(value));
   }
   return to_string(str_array, delimiter, prepend_char, append_char);
-}
-
-// see: https://stackoverflow.com/a/32821650/2634818
-template <typename... Args>
-std::string string_sprintf(const char *format, Args... args) {
-  size_t length = std::snprintf(nullptr, 0, format, args...);
-  assert(length >= 0);
-
-  char *buf = new char[length + 1];
-  std::snprintf(buf, length + 1, format, args...);
-
-  std::string str(buf);
-  delete[] buf;
-  return str;
 }
 
 inline bool psram_available() {

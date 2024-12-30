@@ -14,6 +14,7 @@
 #    - Timer: `event,pageOpenDetail,popupTimer,uuid.15`
 #       - Start timer with time 0:35:40: `event,buttonPress2,uuid.15,timer-start,0:35:40`
 #    - RGBW Light: `event,pageOpenDetail,popupLight,uuid.12`
+#    - Input Select: `event,pageOpenDetail,popupInSel,climate.ecobee`
 
 substitutions:
   node_name: nspanel-test
@@ -26,14 +27,14 @@ esphome:
   platformio_options:
     build_flags:
       - -DTEST_DEVICE_MODE
+      - -DFAKE_TFT_UPLOAD
 
 esp32:
   board: lolin32_lite
   framework:
     type: esp-idf
-    # sdkconfig_options:
-    #   CONFIG_D0WD_PSRAM_CLK_IO: '5'
-    #   CONFIG_D0WD_PSRAM_CS_IO: '18'
+    # version: latest
+    # platform_version: '6.9.0'
 
 external_components:
   - source: components
@@ -41,12 +42,17 @@ external_components:
 
 nspanel_lovelace:
   id: nspanel
-  model: eu # eu us-l us-p
+  locale:
+    temperature_unit: celcius
+    language: en
   sleep_timeout: 10
   screensaver:
     time_id: homeassistant_time
     weather:
       entity_id: weather.forecast_home
+  
+  ## WARNING: There is not enough RAM to support lots of cards on a basic ESP32 without PSRAM
+  ##          If you have memory issues, try disabling a few unused cards and try again.
   cards:
     - type: cardGrid
       id: lights_card
@@ -98,6 +104,40 @@ nspanel_lovelace:
       entities:
         - entity_id: cover.living_room_window
           name: Tilt Cover (Window)
+        - entity_id: climate.ecobee
+          name: Climate Ecobee
+        - entity_id: climate.hvac
+          name: Climate HVAC
+        - entity_id: select.speed
+          name: Select Speed
+
+    - type: cardEntities
+      id: extras_4_card
+      title: Extras 4
+      sleep_timeout: 30
+      entities:
+        - entity_id: number.pwm_1
+          name: Number Decimal
+        - entity_id: lock.openable_lock
+          name: Openable Lock
+        - entity_id: fan.percentage_limited_fan
+          name: Fan
+        - entity_id: vacuum.5_fifth_floor
+          name: Vacuum 5
+
+    - type: cardEntities
+      id: extras_5_card
+      title: Extras 5
+      sleep_timeout: 30
+      entities:
+        - entity_id: sun.sun
+          name: Sun
+        - entity_id: person.oliver
+          name: Person
+        - entity_id: text.text
+          name: Text
+        - entity_id: alarm_control_panel.security
+          name: Alarm
 
     - type: cardQR
       id: qr_card
@@ -118,6 +158,32 @@ nspanel_lovelace:
       sleep_timeout: 60
       title: Alarm
       alarm_entity_id: alarm_control_panel.security
+
+    - type: cardThermo
+      id: thermo_card_1
+      sleep_timeout: 60
+      title: Thermo Ecobee
+      thermo_entity_id: climate.ecobee
+
+    - type: cardThermo
+      id: thermo_card_2
+      sleep_timeout: 60
+      title: Thermo HVAC
+      thermo_entity_id: climate.hvac
+
+    - type: cardThermo
+      id: thermo_card_3
+      sleep_timeout: 60
+      title: Thermo heatpump
+      thermo_entity_id: climate.heatpump
+
+    - type: cardMedia
+      id: media_card
+      sleep_timeout: 60
+      title: Media Lounge
+      media_entity_id: media_player.lounge_room
+      # entities:
+      #   - entity_id: sensor.carbon_dioxide
 
 logger:
   baud_rate: 115200
@@ -220,6 +286,20 @@ button:
     on_press:
       # Simulate TFT reboot
       - lambda: 'id(nspanel).process_command("event,startup,53,eu");'
+  - platform: template
+    name: $node_name PrintDebugInfo
+    on_press:
+      - logger.log:
+          format: "DebugInfo model:%s ver:%hu mem:{min_heap:%u,psram_used:%hu,int_min_free:%hu,int_free:%hu,int_max_free_blk:%hu}"
+          args: [
+            'Configuration::get_model_str().c_str()',
+            'Configuration::get_version()',
+            'esp_get_minimum_free_heap_size()',
+            'psram_used()',
+            'heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL)',
+            'heap_caps_get_free_size(MALLOC_CAP_INTERNAL)',
+            'heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL)'
+          ]
 
 text_sensor:
   - platform: wifi_info

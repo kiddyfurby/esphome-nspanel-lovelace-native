@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config.h"
+#include "defines.h"
 #include "entity.h"
 #include "helpers.h"
 #include "page_item_base.h"
@@ -26,13 +26,13 @@ public:
       const std::string &uuid, const std::string &navigation_uuid);
   NavigationItem(
       const std::string &uuid, const std::string &navigation_uuid, 
-      const std::string &icon_default_value);
+      const icon_char_t *icon_default_value);
   NavigationItem(
       const std::string &uuid, const std::string &navigation_uuid, 
       const uint16_t icon_default_color);
   NavigationItem(
       const std::string &uuid, const std::string &navigation_uuid, 
-      const std::string &icon_default_value, const uint16_t icon_default_color);
+      const icon_char_t *icon_default_value, const uint16_t icon_default_color);
   // virtual ~NavigationItem() {}
 
   void accept(PageItemVisitor& visitor) override;
@@ -52,13 +52,13 @@ public:
   StatusIconItem(const std::string &uuid, std::shared_ptr<Entity> entity);
   StatusIconItem(
       const std::string &uuid, std::shared_ptr<Entity> entity,
-      const std::string &icon_default_value);
+      const icon_char_t *icon_default_value);
   StatusIconItem(
       const std::string &uuid, std::shared_ptr<Entity> entity,
       const uint16_t icon_default_color);
   StatusIconItem(
       const std::string &uuid, std::shared_ptr<Entity> entity,
-      const std::string &icon_default_value,
+      const icon_char_t *icon_default_value,
       const uint16_t icon_default_color);
   // virtual ~StatusIconItem() {}
 
@@ -96,19 +96,6 @@ public:
   void set_icon_by_weather_condition(const std::string &condition);
   bool set_value(const std::string &value) override;
 
-  // A map of icons and their respective color for each weather condition
-  // see:
-  //  - https://www.home-assistant.io/integrations/weather/
-  //  - 'get_entity_color' function in:
-  //  https://github.com/joBr99/nspanel-lovelace-ui/blob/main/apps/nspanel-lovelace-ui/luibackend/pages.py
-  //  - icon lookup:
-  //      - codepoint values: https://docs.nspanel.pky.eu/icon-cheatsheet.html
-  //      - icon mapping:
-  //      https://github.com/joBr99/nspanel-lovelace-ui/blob/main/apps/nspanel-lovelace-ui/luibackend/icon_mapping.py
-  //      - mdi icons: https://pictogrammers.com/library/mdi/
-  //  - color lookup:
-  //      - https://rgbcolorpicker.com/565
-  static char_icon_map icon_color_map;
   // The temperature unit all weather items will use
   static std::string temperature_unit;
 
@@ -148,7 +135,7 @@ class AlarmIconItem :
     public PageItem_Icon {
 public:
   AlarmIconItem(const std::string &uuid,
-      const std::string &icon_default_value, const uint16_t icon_default_color);
+      const icon_char_t *icon_default_value, const uint16_t icon_default_color);
   // virtual ~AlarmIconItem() {}
 
   void accept(PageItemVisitor& visitor) override;

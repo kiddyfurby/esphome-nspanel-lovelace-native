@@ -19,7 +19,7 @@ static const char *const TAG = "nspanel_lovelace_upload";
 // Originally from: https://github.com/sairon/esphome-nspanel-lovelace-ui/blob/dev/components/nspanel_lovelace/nspanel_lovelace_upload.cpp
 // Followed guide: https://unofficialnextion.com/t/nextion-upload-protocol-v1-2-the-fast-one/1044/2
 
-int NSPanelLovelace::upload_by_chunks_(HTTPClient *http, const std::string &url, int range_start) {
+int NSPanelLovelace::upload_by_chunks_(HTTPClient *http, const std::string &url, uint32_t &range_start) {
   int range_end;
 
   if (range_start == 0 && this->transfer_buffer_size_ > 16384) {  // Start small at the first run in case of a big skip
@@ -34,7 +34,7 @@ int NSPanelLovelace::upload_by_chunks_(HTTPClient *http, const std::string &url,
   char range_header[64];
   sprintf(range_header, "bytes=%d-%d", range_start, range_end);
 
-  ESP_LOGD(TAG, "Requesting range: %s", range_header);
+  ESP_LOGV(TAG, "Requesting range: %s", range_header);
 
   int tries = 1;
   int code;
@@ -72,6 +72,11 @@ int NSPanelLovelace::upload_by_chunks_(HTTPClient *http, const std::string &url,
 
   // fetch next segment from HTTP stream
   while (fetched < range) {
+    if (!http->connected()) {
+      http->end();
+      ESP_LOGW(TAG, "HTTP disconnected! Restart upload to continue");
+      return -1;
+    }
     size = http->getStreamPtr()->available();
     if (!size) {
       App.feed_wdt();
@@ -83,7 +88,7 @@ int NSPanelLovelace::upload_by_chunks_(HTTPClient *http, const std::string &url,
     fetched += c;
   }
   http->end();
-  ESP_LOGD(TAG, "fetched %d bytes", fetched);
+  ESP_LOGV(TAG, "fetched %d bytes", fetched);
 
   // upload fetched segments to the display in 4KB chunks
   for (int i = 0; i < range; i += 4096) {
@@ -134,9 +139,8 @@ bool NSPanelLovelace::upload_tft(const std::string &url) {
     return false;
   }
 
-  if (!this->reparse_mode_) {
-    this->start_reparse_mode_();
-  }
+  ESP_LOGD(TAG, "Exiting Nextion reparse mode");
+  this->set_reparse_mode_(false);
 
   this->is_updating_ = true;
 
@@ -189,9 +193,16 @@ bool NSPanelLovelace::upload_tft(const std::string &url) {
     ESP_LOGE(TAG, "Failed to get file size");
     return this->upload_end_(false);
   }
+  // The Nextion will ignore the update command if it is sleeping
+  ESP_LOGD(TAG, "Wake-up Nextion");
+  // These commands target the stock firmware
+  this->send_nextion_command_("sleep=0");
+  this->send_nextion_command_("dim=100");
+  // This command targets nspanel firmware
+  this->send_nextion_command_("dimmode~100~100");
+  delay(250); // NOLINT
 
   ESP_LOGD(TAG, "Updating Nextion");
-  // The Nextion will ignore the update command if it is sleeping
 
   char command[128];
   // Tells the Nextion the content length of the tft file and baud rate it will be sent at
@@ -261,7 +272,7 @@ bool NSPanelLovelace::upload_tft(const std::string &url) {
   ESP_LOGD(TAG, "Updating tft from \"%s\" with a file size of %d using %zu chunksize, Heap Size %d",
            url.c_str(), this->content_length_, this->transfer_buffer_size_, ESP.getFreeHeap());
 
-  int result = 0;
+  uint32_t result = 0;
   while (this->content_length_ > 0) {
     result = this->upload_by_chunks_(&http, url, result);
     if (result < 0) {
@@ -270,7 +281,7 @@ bool NSPanelLovelace::upload_tft(const std::string &url) {
     }
     App.feed_wdt();
     // NOLINTNEXTLINE(readability-static-accessed-through-instance)
-    ESP_LOGD(TAG, "Heap Size %d, Bytes left %d", ESP.getFreeHeap(), this->content_length_);
+    ESP_LOGV(TAG, "Heap Size %d, Bytes left %d", ESP.getFreeHeap(), this->content_length_);
   }
   ESP_LOGD(TAG, "Successfully updated Nextion!");
 

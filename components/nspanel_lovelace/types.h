@@ -2,14 +2,11 @@
 
 #include <array>
 #include <cassert>
-#include <cstring>
-#include <map>
 #include <stdint.h>
 #include <string>
 #include <utility>
-#include <vector>
 
-#include "config.h"
+#include "defines.h"
 #include "helpers.h"
 
 namespace esphome {
@@ -17,8 +14,172 @@ namespace nspanel_lovelace {
 
 enum class render_page_option : uint8_t { prev, next, screensaver, default_page };
 
-enum class alarm_arm_action : uint8_t { arm_home, arm_away, arm_night, arm_vacation };
-struct alarm_entity_state {
+enum class alarm_arm_action : uint8_t { arm_home, arm_away, arm_night, arm_vacation, arm_custom_bypass };
+
+struct icon_t {
+  static constexpr const icon_char_t* account = u8"\uE003";
+  static constexpr const icon_char_t* air_humidifier = u8"\uF098";
+  static constexpr const icon_char_t* alert_circle = u8"\uE027";
+  static constexpr const icon_char_t* alert_circle_outline = u8"\uE5D5";
+  static constexpr const icon_char_t* arrow_bottom_left = u8"\uE041";
+  static constexpr const icon_char_t* arrow_collapse_horizontal = u8"\uE84B";
+  static constexpr const icon_char_t* arrow_down = u8"\uE044";
+  static constexpr const icon_char_t* arrow_expand_horizontal = u8"\uE84D";
+  static constexpr const icon_char_t* arrow_left_bold = u8"\uE730";
+  static constexpr const icon_char_t* arrow_right_bold = u8"\uE733";
+  static constexpr const icon_char_t* arrow_top_right = u8"\uE05B";
+  static constexpr const icon_char_t* arrow_up = u8"\uE05C";
+  static constexpr const icon_char_t* arrow_up_bold = u8"\uE736";
+  static constexpr const icon_char_t* battery = u8"\uE078";
+  static constexpr const icon_char_t* battery_charging = u8"\uE083";
+  static constexpr const icon_char_t* battery_outline = u8"\uE08D";
+  static constexpr const icon_char_t* bell_ring = u8"\uE09D";
+  static constexpr const icon_char_t* blinds = u8"\uE0AB";
+  static constexpr const icon_char_t* blinds_open = u8"\uF010";
+  static constexpr const icon_char_t* brightness_5 = u8"\uE0DD";
+  static constexpr const icon_char_t* brightness_7 = u8"\uE0DF";
+  static constexpr const icon_char_t* calendar = u8"\uE0EC";
+  static constexpr const icon_char_t* calendar_clock = u8"\uE0EF";
+  static constexpr const icon_char_t* calendar_sync = u8"\uEE8D";
+  static constexpr const icon_char_t* cash = u8"\uE113";
+  static constexpr const icon_char_t* chart_bell_curve = u8"\uEC4F";
+  static constexpr const icon_char_t* check_circle = u8"\uE5DF";
+  static constexpr const icon_char_t* check_network_outline = u8"\uEC53";
+  static constexpr const icon_char_t* checkbox_blank_circle = u8"\uE12E";
+  static constexpr const icon_char_t* checkbox_marked_circle = u8"\uE132";
+  static constexpr const icon_char_t* circle_slice_8 = u8"\uEAA4";
+  static constexpr const icon_char_t* close_network_outline = u8"\uEC5E";
+  static constexpr const icon_char_t* crop_portrait = u8"\uE1A0";
+  static constexpr const icon_char_t* cursor_text = u8"\uE5E6";
+  static constexpr const icon_char_t* curtains = u8"\uF845";
+  static constexpr const icon_char_t* curtains_closed = u8"\uF846";
+  static constexpr const icon_char_t* door_closed = u8"\uE81A";
+  static constexpr const icon_char_t* door_open = u8"\uE81B";
+  static constexpr const icon_char_t* fan = u8"\uE20F";
+  static constexpr const icon_char_t* fire = u8"\uE237";
+  static constexpr const icon_char_t* flash = u8"\uE240";
+  static constexpr const icon_char_t* format_color_text = u8"\uE69D";
+  static constexpr const icon_char_t* garage = u8"\uE6D8";
+  static constexpr const icon_char_t* garage_open = u8"\uE6D9";
+  static constexpr const icon_char_t* gas_cylinder = u8"\uE646";
+  static constexpr const icon_char_t* gate = u8"\uE298";
+  static constexpr const icon_char_t* gate_open = u8"\uF169";
+  static constexpr const icon_char_t* gauge = u8"\uE299";
+  static constexpr const icon_char_t* gesture_tap_button = u8"\uF2A7";
+  static constexpr const icon_char_t* help_circle_outline = u8"\uE624";
+  static constexpr const icon_char_t* home = u8"\uE2DB";
+  static constexpr const icon_char_t* home_outline = u8"\uE6A0";
+  static constexpr const icon_char_t* light_switch = u8"\uE97D";
+  static constexpr const icon_char_t* lightbulb = u8"\uE334";
+  static constexpr const icon_char_t* link_box_outline = u8"\uED1A";
+  static constexpr const icon_char_t* lock = u8"\uE33D";
+  static constexpr const icon_char_t* lock_open = u8"\uE33E";
+  static constexpr const icon_char_t* motion_sensor = u8"\uED90";
+  static constexpr const icon_char_t* motion_sensor_off = u8"\uF434";
+  static constexpr const icon_char_t* movie = u8"\uE380";
+  static constexpr const icon_char_t* music = u8"\uE759";
+  static constexpr const icon_char_t* music_note = u8"\uE386";
+  static constexpr const icon_char_t* music_note_off = u8"\uE389";
+  static constexpr const icon_char_t* open_in_app = u8"\uE3CA";
+  static constexpr const icon_char_t* package = u8"\uE3D2";
+  static constexpr const icon_char_t* package_up = u8"\uE3D4";
+  static constexpr const icon_char_t* palette = u8"\uE3D7";
+  static constexpr const icon_char_t* pause = u8"\uE3E3";
+  static constexpr const icon_char_t* play = u8"\uE409";
+  static constexpr const icon_char_t* playlist_music = u8"\uECB7";
+  static constexpr const icon_char_t* playlist_play = u8"\uE410";
+  static constexpr const icon_char_t* playlist_star = u8"\uEDF1";
+  static constexpr const icon_char_t* power = u8"\uE424";
+  static constexpr const icon_char_t* power_plug = u8"\uE6A4";
+  static constexpr const icon_char_t* power_plug_off = u8"\uE6A5";
+  static constexpr const icon_char_t* progress_alert = u8"\uECBB";
+  static constexpr const icon_char_t* radiobox_blank = u8"\uE43C";
+  static constexpr const icon_char_t* ray_vertex = u8"\uE444";
+  static constexpr const icon_char_t* robot = u8"\uE6A8";
+  static constexpr const icon_char_t* robot_vacuum = u8"\uE70C";
+  static constexpr const icon_char_t* script_text = u8"\uEBC1";
+  static constexpr const icon_char_t* shield = u8"\uE497";
+  static constexpr const icon_char_t* shield_airplane = u8"\uE6BA";
+  static constexpr const icon_char_t* shield_home = u8"\uE689";
+  static constexpr const icon_char_t* shield_lock = u8"\uE99C";
+  static constexpr const icon_char_t* shield_moon = u8"\uF827";
+  static constexpr const icon_char_t* shield_off = u8"\uE99D";
+  static constexpr const icon_char_t* shuffle = u8"\uE49C";
+  static constexpr const icon_char_t* shuffle_disable = u8"\uE49D";
+  static constexpr const icon_char_t* signal = u8"\uE4A1";
+  static constexpr const icon_char_t* smog = u8"\uEA70";
+  static constexpr const icon_char_t* smoke_detector = u8"\uE391";
+  static constexpr const icon_char_t* smoke_detector_alert = u8"\uF92D";
+  static constexpr const icon_char_t* smoke_detector_variant = u8"\uF80A";
+  static constexpr const icon_char_t* smoke_detector_variant_alert = u8"\uF92F";
+  static constexpr const icon_char_t* snowflake = u8"\uE716";
+  static constexpr const icon_char_t* speaker_off = u8"\uE4C3";
+  static constexpr const icon_char_t* square = u8"\uE763";
+  static constexpr const icon_char_t* square_outline = u8"\uE762";
+  static constexpr const icon_char_t* stop = u8"\uE4DA";
+  static constexpr const icon_char_t* temperature_celsius = u8"\uE503";
+  static constexpr const icon_char_t* temperature_fahrenheit = u8"\uE504";
+  static constexpr const icon_char_t* thermometer = u8"\uE50E";
+  static constexpr const icon_char_t* timer = u8"\uF3AA";
+  static constexpr const icon_char_t* timer_outline = u8"\uE51A";
+  static constexpr const icon_char_t* vibrate = u8"\uE565";
+  static constexpr const icon_char_t* video = u8"\uE566";
+  static constexpr const icon_char_t* water = u8"\uE58B";
+  static constexpr const icon_char_t* water_off = u8"\uE58C";
+  static constexpr const icon_char_t* water_percent = u8"\uE58D";
+  static constexpr const icon_char_t* weather_cloudy = u8"\uE58F";
+  static constexpr const icon_char_t* weather_fog = u8"\uE590";
+  static constexpr const icon_char_t* weather_hail = u8"\uE591";
+  static constexpr const icon_char_t* weather_lightning = u8"\uE592";
+  static constexpr const icon_char_t* weather_lightning_rainy = u8"\uE67D";
+  static constexpr const icon_char_t* weather_night = u8"\uE593";
+  static constexpr const icon_char_t* weather_partly_cloudy = u8"\uE594";
+  static constexpr const icon_char_t* weather_partly_snowy_rainy = u8"\uEF34";
+  static constexpr const icon_char_t* weather_pouring = u8"\uE595";
+  static constexpr const icon_char_t* weather_rainy = u8"\uE596";
+  static constexpr const icon_char_t* weather_snowy = u8"\uE597";
+  static constexpr const icon_char_t* weather_sunny = u8"\uE598";
+  static constexpr const icon_char_t* weather_sunset_down = u8"\uE59A";
+  static constexpr const icon_char_t* weather_sunset_up = u8"\uE59B";
+  static constexpr const icon_char_t* weather_windy = u8"\uE59C";
+  static constexpr const icon_char_t* weather_windy_variant = u8"\uE59D";
+  static constexpr const icon_char_t* window_closed = u8"\uE5AD";
+  static constexpr const icon_char_t* window_open = u8"\uE5B0";
+  static constexpr const icon_char_t* window_shutter = u8"\uF11B";
+  static constexpr const icon_char_t* window_shutter_open = u8"\uF11D";
+  
+  static constexpr const icon_char_t* none = u8"";
+};
+
+struct Icon {
+  // The codepoint value
+  // default: mdi:05D6 (alert-circle-outline)
+  const icon_char_t *value;
+  // The rgb565 color
+  // default: #ff3131 (red)
+  uint16_t color;
+  // The string representation of the rgb565 color
+  const std::string color_str() const { return std::to_string(color); }
+
+  constexpr Icon() : Icon(icon_t::alert_circle_outline, 63878u) { }
+  constexpr Icon(const icon_char_t* value, const uint16_t color) : value(value), color(color) { }
+};
+
+struct entity_state {
+  static constexpr const char* unknown = "unknown";
+  static constexpr const char* unavailable = "unavailable";
+  static constexpr const char* on = "on";
+  static constexpr const char* off = "off";
+  // cover
+  static constexpr const char* open = "open";
+  static constexpr const char* closed = "closed";
+  // media_player
+  static constexpr const char* playing = "playing";
+  static constexpr const char* paused = "paused";
+  // lock
+  static constexpr const char* locked = "locked";
+  static constexpr const char* unlocked = "unlocked";
+  // alarm_control_panel
   static constexpr const char* disarmed = "disarmed";
   static constexpr const char* arming = "arming";
   static constexpr const char* pending = "pending";
@@ -28,184 +189,31 @@ struct alarm_entity_state {
   static constexpr const char* armed_night = "armed_night";
   static constexpr const char* armed_vacation = "armed_vacation";
   static constexpr const char* armed_custom_bypass = "armed_custom_bypass";
-};
+  // sun
+  static constexpr const char* above_horizon = "above_horizon";
+  static constexpr const char* below_horizon = "below_horizon";
+  // vacuum
+  static constexpr const char* docked = "docked";
+  // person
+  static constexpr const char* home = "home";
+  static constexpr const char* not_home = "not_home";
+  // timer
+  static constexpr const char* idle = "idle";
+  // climate
+  static constexpr const char* cool = "cool";
+  static constexpr const char* dry = "dry";
+  static constexpr const char* heat = "heat";
+  static constexpr const char* heat_cool = "heat_cool";
+  static constexpr const char* fan_only = "fan_only";
+  static constexpr const char* auto_ = "auto";
 
-static const std::array<std::array<const char *, 2>, 7> dow_names = {
-    {{"Sun", "Sunday"},
-     {"Mon", "Monday"},
-     {"Tue", "Tuesday"},
-     {"Wed", "Wednesday"},
-     {"Thu", "Thursday"},
-     {"Fri", "Friday"},
-     {"Sat", "Saturday"}}};
-
-class DayOfWeekMap {
-public:
-  enum dow : uint8_t { sunday, monday, tuesday, wednesday, thursday, friday, saturday };
-  enum dow_mode : uint8_t { 
-    none = 0,
-    short_dow = 1 << 0,
-    long_dow = 1 << 1,
-    both = short_dow | long_dow
-  };
-
-  DayOfWeekMap() :
-      sunday_overridden_(false),
-      monday_overridden_(false),
-      tuesday_overridden_(false),
-      wednesday_overridden_(false),
-      thursday_overridden_(false),
-      friday_overridden_(false),
-      saturday_overridden_(false),
-      sunday_(dow_names.at(0)),
-      monday_(dow_names.at(1)),
-      tuesday_(dow_names.at(2)),
-      wednesday_(dow_names.at(3)),
-      thursday_(dow_names.at(4)),
-      friday_(dow_names.at(5)),
-      saturday_(dow_names.at(6)) {}
-
-  void set_sunday(const std::array<const char *, 2> &sunday) {
-    this->sunday_ = sunday;
-    this->sunday_overridden_ = true;
-  }
-  void set_monday(const std::array<const char *, 2> &monday) {
-    this->monday_ = monday;
-    this->monday_overridden_ = true;
-  }
-  void set_tuesday(const std::array<const char *, 2> &tuesday) {
-    this->tuesday_ = tuesday;
-    this->tuesday_overridden_ = true;
-  }
-  void set_wednesday(const std::array<const char *, 2> &wednesday) {
-    this->wednesday_ = wednesday;
-    this->wednesday_overridden_ = true;
-  }
-  void set_thursday(const std::array<const char *, 2> &thursday) {
-    this->thursday_ = thursday;
-    this->thursday_overridden_ = true;
-  }
-  void set_friday(const std::array<const char *, 2> &friday) {
-    this->friday_ = friday;
-    this->friday_overridden_ = true;
-  }
-  void set_saturday(const std::array<const char *, 2> &saturday) {
-    this->saturday_ = saturday;
-    this->saturday_overridden_ = true;
-  }
-
-  std::string &replace(std::string &str, dow_mode mode) {
-    if (mode == dow_mode::none)
-      return str;
-
-    if ((mode & dow_mode::long_dow) == dow_mode::long_dow) {
-      if (sunday_overridden_)
-        replace_first(str, dow_names.at(0).at(1), sunday_.at(1));
-      if (monday_overridden_)
-        replace_first(str, dow_names.at(1).at(1), monday_.at(1));
-      if (tuesday_overridden_)
-        replace_first(str, dow_names.at(2).at(1), tuesday_.at(1));
-      if (wednesday_overridden_)
-        replace_first(str, dow_names.at(3).at(1), wednesday_.at(1));
-      if (thursday_overridden_)
-        replace_first(str, dow_names.at(4).at(1), thursday_.at(1));
-      if (friday_overridden_)
-        replace_first(str, dow_names.at(5).at(1), friday_.at(1));
-      if (saturday_overridden_)
-        replace_first(str, dow_names.at(6).at(1), saturday_.at(1));
-    }
-    if ((mode & dow_mode::short_dow) == dow_mode::short_dow) {
-      if (sunday_overridden_)
-        replace_first(str, dow_names.at(0).at(0), sunday_.at(0));
-      if (monday_overridden_)
-        replace_first(str, dow_names.at(1).at(0), monday_.at(0));
-      if (tuesday_overridden_)
-        replace_first(str, dow_names.at(2).at(0), tuesday_.at(0));
-      if (wednesday_overridden_)
-        replace_first(str, dow_names.at(3).at(0), wednesday_.at(0));
-      if (thursday_overridden_)
-        replace_first(str, dow_names.at(4).at(0), thursday_.at(0));
-      if (friday_overridden_)
-        replace_first(str, dow_names.at(5).at(0), friday_.at(0));
-      if (saturday_overridden_)
-        replace_first(str, dow_names.at(6).at(0), saturday_.at(0));
-    }
-    return str;
-  }
-
-  const std::array<const char *, 2> &at(size_t index) const {
-    return operator[](index);
-  }
-
-  const std::array<const char *, 2> &operator[](size_t index) const {
-    assert(index < 7);
-    switch (index) {
-    case dow::sunday:
-      return sunday_;
-    case dow::monday:
-      return monday_;
-    case dow::tuesday:
-      return tuesday_;
-    case dow::wednesday:
-      return wednesday_;
-    case dow::thursday:
-      return thursday_;
-    case dow::friday:
-      return friday_;
-    case dow::saturday:
-      return saturday_;
-    }
-    // should never reach here
-    return sunday_;
-  }
-
-private:
-  bool sunday_overridden_, monday_overridden_, tuesday_overridden_,
-    wednesday_overridden_, thursday_overridden_, friday_overridden_, 
-    saturday_overridden_;
-
-  std::array<const char *, 2> sunday_;
-  std::array<const char *, 2> monday_;
-  std::array<const char *, 2> tuesday_;
-  std::array<const char *, 2> wednesday_;
-  std::array<const char *, 2> thursday_;
-  std::array<const char *, 2> friday_;
-  std::array<const char *, 2> saturday_;
-};
-
-struct Icon {
-  // The codepoint value
-  // default: mdi:05D6 (alert-circle-outline)
-  std::string value;
-  // The rgb565 color
-  // default: #ff3131 (red)
-  uint16_t color;
-  // The string representation of the rgb565 color
-  const std::string color_str() const { return std::to_string(color); }
-
-  Icon() : Icon(u8"\uE5D5", 63878u) { }
-  Icon(const std::string value, const uint16_t color) : value(value), color(color) { }
-};
-
-struct compare_char_str {
-  bool operator()(const char *a, const char *b) const {
-    return a != nullptr && b != nullptr && std::strcmp(a, b) < 0;
-  }
 };
 
 struct generic_type {
   static constexpr const char* enable = "enable";
   static constexpr const char* disable = "disable";
-  static constexpr const char* unknown = "unknown";
-  static constexpr const char* unavailable = "unavailable";
-  static constexpr const char* on = "on";
-  static constexpr const char* off = "off";
   static constexpr const char* empty = "";
 };
-
-typedef std::map<const char*, const char*, compare_char_str> char_map;
-typedef std::map<const char*, Icon, compare_char_str> char_icon_map;
-typedef std::map<const char*, std::vector<const char *>, compare_char_str> char_list_map;
 
 struct weather_type {
   static constexpr const char* sunny = "sunny";
@@ -250,16 +258,21 @@ struct button_type {
   static constexpr const char* mediaShuffle = "media-shuffle";
   static constexpr const char* volumeSlider = "volumeSlider";
   static constexpr const char* speakerSel = "speaker-sel";
+  static constexpr const char* modeMediaPlayer = "mode-media_player";
 
   // light page
   static constexpr const char* brightnessSlider = "brightnessSlider";
   static constexpr const char* colorTempSlider = "colorTempSlider";
   static constexpr const char* colorWheel = "colorWheel";
+  static constexpr const char* modeLight = "mode-light";
 
   // climate page
   static constexpr const char* tempUpd = "tempUpd";
   static constexpr const char* tempUpdHighLow = "tempUpdHighLow";
   static constexpr const char* hvacAction = "hvac_action";
+  static constexpr const char* modePresetModes = "mode-preset_modes";
+  static constexpr const char* modeSwingModes = "mode-swing_modes";
+  static constexpr const char* modeFanModes = "mode-fan_modes";
 
   // alarm page
   static constexpr const char* disarm = "disarm";
@@ -267,22 +280,20 @@ struct button_type {
   static constexpr const char* armAway = "arm_away";
   static constexpr const char* armNight = "arm_night";
   static constexpr const char* armVacation = "arm_vacation";
+  static constexpr const char* armCustomBypass = "arm_custom_bypass";
   static constexpr const char* opnSensorNotify = "opnSensorNotify";
 
-  // cardUnlock
+  // unlock page
   static constexpr const char* cardUnlockUnlock = "cardUnlock-unlock";
-  static constexpr const char* modePresetModes = "mode-preset_modes";
-  static constexpr const char* modeSwingModes = "mode-swing_modes";
-  static constexpr const char* modeFanModes = "mode-fan_modes";
-  static constexpr const char* modeInputSelect = "mode-input_select";
-  static constexpr const char* modeLight = "mode-light";
-  static constexpr const char* modeMediaPlayer = "mode-media_player";
 
   // timer detail page
   static constexpr const char* timerStart = "timer-start";
   static constexpr const char* timerCancel = "timer-cancel";
   static constexpr const char* timerPause = "timer-pause";
   static constexpr const char* timerFinish = "timer-finish";
+
+  static constexpr const char* modeInputSelect = "mode-input_select";
+  static constexpr const char* modeSelect = "mode-select";
 };
 
 struct entity_type {
@@ -308,6 +319,7 @@ struct entity_type {
   static constexpr const char* sensor = "sensor";
   static constexpr const char* binary_sensor = "binary_sensor";
   static constexpr const char* input_text = "input_text";
+  static constexpr const char* text = "text"; //added
   static constexpr const char* select = "select";
   static constexpr const char* alarm_control_panel = "alarm_control_panel";
   static constexpr const char* media_player = "media_player";
@@ -446,7 +458,7 @@ inline const char *to_string(page_type type) {
 struct action_type {
   static constexpr const char* buttonPress2 = "buttonPress2";
   static constexpr const char* pageOpenDetail = "pageOpenDetail";
-  static constexpr const char* sleepReached = "sleepReached";
+  static constexpr const char* sleepReached = button_type::sleepReached;
   static constexpr const char* startup = "startup";
 };
 
@@ -463,6 +475,34 @@ struct ha_action_type {
   static constexpr const char* close_cover_tilt = "close_cover_tilt";
   static constexpr const char* stop_cover_tilt = "stop_cover_tilt";
   static constexpr const char* set_cover_tilt_position = "set_cover_tilt_position";
+  static constexpr const char* set_temperature = "set_temperature";
+  static constexpr const char* set_hvac_mode = "set_hvac_mode";
+  static constexpr const char* set_preset_mode = "set_preset_mode";
+  static constexpr const char* set_swing_mode = "set_swing_mode";
+  static constexpr const char* set_fan_mode = "set_fan_mode";
+  static constexpr const char* media_next_track = "media_next_track";
+  static constexpr const char* media_previous_track = "media_previous_track";
+  static constexpr const char* media_play_pause = "media_play_pause";
+  static constexpr const char* shuffle_set = "shuffle_set";
+  static constexpr const char* volume_set = "volume_set";
+  static constexpr const char* select_source = "select_source";
+  static constexpr const char* select_next = "select_next";
+  static constexpr const char* start = "start";
+  static constexpr const char* return_to_base = "return_to_base";
+  static constexpr const char* lock = "lock";
+  static constexpr const char* unlock = "unlock";
+  static constexpr const char* select_option = "select_option";
+  static constexpr const char* set_percentage = "set_percentage";
+  static constexpr const char* set_value = "set_value";
+
+  // others not in HA
+  static constexpr const char* pause = "pause";
+  static constexpr const char* cancel = "cancel";
+  static constexpr const char* finish = "finish";
+  // static constexpr const char* disarm = "disarm";
+  // static constexpr const char* start_cleaning = "start_cleaning";
+  // static constexpr const char* resume_cleaning = "resume_cleaning";
+  // static constexpr const char* run = "run";
 };
 
 enum class ha_attr_type : uint8_t {
@@ -481,22 +521,60 @@ enum class ha_attr_type : uint8_t {
   color_mode,
   color_temp,
   rgb_color,
+  effect_list,
+  effect,
   // alarm_control_panel
   code,
   code_arm_required,
+  open_sensors,
   // cover
   current_position,
   position,
   current_tilt_position,
   tilt_position,
-  // weather
+  // weather & climate
   temperature,
   temperature_unit,
+  forecast,
   // timer
   duration,
   remaining,
   editable,
-  finishes_at
+  finishes_at,
+  // climate & fan (only preset_mode,preset_modes)
+  current_temperature,
+  target_temp_high,
+  target_temp_low,
+  target_temp_step,
+  min_temp,
+  max_temp,
+  hvac_action,
+  preset_mode,
+  preset_modes,
+  swing_mode,
+  swing_modes,
+  fan_mode,
+  fan_modes,
+  hvac_mode,
+  hvac_modes,
+  // media
+  media_title,
+  media_artist,
+  volume_level,
+  shuffle,
+  media_content_type,
+  source,
+  source_list,
+  // input & input_select
+  options,
+  option,
+  // number & input_number
+  min,
+  max,
+  value,
+  // fan
+  percentage,
+  percentage_step,
 };
 
 static constexpr const char* ha_attr_names [] = {
@@ -515,22 +593,60 @@ static constexpr const char* ha_attr_names [] = {
   "color_mode",
   "color_temp",
   "rgb_color",
+  "effect_list",
+  "effect",
   // alarm_control_panel
   "code",
   "code_arm_required",
+  "open_sensors",
   // cover
   "current_position",
   "position",
   "current_tilt_position",
   "tilt_position",
-  // weather
+  // weather & climate
   "temperature",
   "temperature_unit",
+  "forecast",
   // timer
   "duration",
   "remaining",
   "editable",
   "finishes_at",
+  // climate & fan (only preset_mode,preset_modes)
+  "current_temperature",
+  "target_temp_high",
+  "target_temp_low",
+  "target_temp_step",
+  "min_temp",
+  "max_temp",
+  "hvac_action",
+  "preset_mode",
+  "preset_modes",
+  "swing_mode",
+  "swing_modes",
+  "fan_mode",
+  "fan_modes",
+  "hvac_mode",
+  "hvac_modes",
+  // media
+  "media_title",
+  "media_artist",
+  "volume_level",
+  "shuffle",
+  "media_content_type",
+  "source",
+  "source_list",
+  // input & input_select
+  "options",
+  "option",
+  // number & input_number
+  "min",
+  "max",
+  "value",
+  // fan
+  "percentage",
+  "percentage_step",
 };
 
 inline const char *to_string(ha_attr_type attr) {
@@ -556,6 +672,17 @@ struct ha_attr_color_mode {
   static constexpr const char* rgbww = "rgbww";
 };
 
+struct ha_attr_media_content_type {
+  static constexpr const char* music = "music";
+  static constexpr const char* tvshow = "tvshow";
+  static constexpr const char* video = "video";
+  static constexpr const char* episode = "episode";
+  static constexpr const char* channel = "channel";
+  static constexpr const char* playlist = "playlist";
+  static constexpr const char* app = "app";
+  static constexpr const char* url = "url";
+};
+
 enum class datetime_mode : uint8_t {
   date = 1<<0,
   time = 1<<1,
@@ -568,275 +695,313 @@ inline datetime_mode operator&(datetime_mode a, datetime_mode b) {
   return static_cast<datetime_mode>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
 }
 
-inline const char *get_icon_by_name(
-    const char_map &map,
-    const std::string& icon_name,
-    const std::string& default_icon_name = "") {
+// note: The FrozenCharMap is designed to avoid dynamic memory allocation by
+//       making use of std::array instead of std::map
+template <typename Value, size_t Size>
+using FrozenCharMap = const std::array<std::pair<const char *, Value>, Size>;
+
+template<typename Value, size_t Size>
+inline bool try_get_value(
+    const FrozenCharMap<Value, Size> &map,
+    Value &return_value,
+    const char *key,
+    const char *fallback_key = nullptr) {
   if (map.size() == 0)
-    return nullptr;
-  auto tmp_icon_name(icon_name);
-  if (icon_name.empty()) {
-    if (!default_icon_name.empty()) {
-      tmp_icon_name = default_icon_name;
+    return false;
+
+  const char *key_cstr = key;
+  do {
+    if ((key_cstr != nullptr && strlen(key_cstr) > 0)) {
+      auto it = map.begin();
+      for (; it != map.end(); ++it) {
+        if (!str_equal(it->first, key_cstr)) continue;
+        return_value = it->second;
+        return true;
+      }
     }
-    else {
-      return nullptr;
-    }
-  }
-  auto icon_it = map.find(tmp_icon_name.c_str());
-  // todo: no icon found in the map, fall back to a default?
-  if (icon_it != map.end()) {
-    return icon_it->second;
-  }
-  return nullptr;
+    if (key_cstr == fallback_key || 
+        fallback_key == nullptr || strlen(fallback_key) == 0)
+      return false;
+    key_cstr = fallback_key;
+  } while (true);
+
+  return false;
 }
 
-inline const std::vector<const char*> *get_icon_by_name(
-    const char_list_map &map,
-    std::string icon_name,
-    const std::string& default_icon_name = "") {
-  if (map.size() == 0)
-    return nullptr;
-  if (icon_name.empty()) {
-    if (!default_icon_name.empty()) {
-      icon_name = default_icon_name;
-    }
-    else {
-      return nullptr;
-    }
-  }
-  auto icon_it = map.find(icon_name.c_str());
-  // todo: no icon found in the map, fall back to a default?
-  if (icon_it != map.end()) {
-    return &icon_it->second;
-  }
-  return nullptr;
+template<typename Value, size_t Size>
+inline bool try_get_value(
+    const FrozenCharMap<Value, Size> &map,
+    Value &return_value,
+    const std::string &key,
+    const char *fallback_key = nullptr) {
+  return try_get_value(map, return_value, key.c_str(), fallback_key);
 }
 
-inline const Icon *get_icon_by_name(
-    const char_icon_map &map,
-    std::string icon_name,
-    const std::string& default_icon_name = "") {
-  if (map.size() == 0)
-    return nullptr;
-  if (icon_name.empty()) {
-    if (!default_icon_name.empty()) {
-      icon_name = default_icon_name;
-    }
-    else {
-      return nullptr;
-    }
-  }
-  auto icon_it = map.find(icon_name.c_str());
-  // todo: no icon found in the map, fall back to a default?
-  if (icon_it != map.end()) {
-    return &icon_it->second;
-  }
-  return nullptr;
+template<typename Value, size_t Size>
+inline const Value &get_value_or_default(
+    const FrozenCharMap<Value, Size> &map,
+    const std::string &key,
+    const Value &default_value,
+    const char *fallback_key = nullptr) {
+  // todo: fix this bad implementation
+  //       use pointers and unwrap Value?
+  static Value ret{};
+  if (try_get_value(map, ret, key.c_str(), fallback_key))
+    return ret;
+  return default_value;
+}
+
+template<size_t Size>
+inline const icon_char_t *get_icon(
+    const FrozenCharMap<const icon_char_t *, Size> &map,
+    const std::string &key,
+    const char *fallback_key = nullptr) {
+  return get_value_or_default(map, key, icon_t::alert_circle_outline, fallback_key);
 }
 
 // simple_type_mapping
-const char_map ENTITY_ICON_MAP {
-  {entity_type::button, u8"\uF2A7"}, // gesture-tap-button
-  {entity_type::navigate, u8"\uF2A7"}, // gesture-tap-button
-  {entity_type::input_button, u8"\uF2A7"}, // gesture-tap-button
-  {entity_type::input_select, u8"\uF2A7"}, // gesture-tap-button
-  {entity_type::scene, u8"\uE3D7"}, // palette
-  {entity_type::script, u8"\uEBC1"}, // script-text
-  {entity_type::switch_, u8"\uE97D"}, // light-switch
-  {entity_type::automation, u8"\uE6A8"}, // robot
-  {entity_type::number, u8"\uE444"}, // ray-vertex
-  {entity_type::input_number, u8"\uE444"}, // ray-vertex
-  {entity_type::light, u8"\uE334"}, // lightbulb
-  {entity_type::fan, u8"\uE20F"}, // fan
-  {entity_type::person, u8"\uE003"}, // account
-  {entity_type::vacuum, u8"\uE70C"}, // robot-vacuum
-  {entity_type::timer, u8"\uE51A"}, // timer-outline
+static constexpr FrozenCharMap<const icon_char_t *, 22> ENTITY_ICON_MAP {{
+  std::pair<const char*, const icon_char_t*>{entity_type::button, icon_t::gesture_tap_button},
+  std::pair<const char*, const icon_char_t*>{entity_type::navigate, icon_t::gesture_tap_button},
+  std::pair<const char*, const icon_char_t*>{entity_type::input_button, icon_t::gesture_tap_button},
+  std::pair<const char*, const icon_char_t*>{entity_type::input_select, icon_t::gesture_tap_button},
+  std::pair<const char*, const icon_char_t*>{entity_type::scene, icon_t::palette},
+  std::pair<const char*, const icon_char_t*>{entity_type::script, icon_t::script_text},
+  std::pair<const char*, const icon_char_t*>{entity_type::switch_, icon_t::light_switch},
+  std::pair<const char*, const icon_char_t*>{entity_type::automation, icon_t::robot},
+  std::pair<const char*, const icon_char_t*>{entity_type::number, icon_t::ray_vertex},
+  std::pair<const char*, const icon_char_t*>{entity_type::input_number, icon_t::ray_vertex},
+  std::pair<const char*, const icon_char_t*>{entity_type::light, icon_t::lightbulb},
+  std::pair<const char*, const icon_char_t*>{entity_type::fan, icon_t::fan},
+  std::pair<const char*, const icon_char_t*>{entity_type::person, icon_t::account},
+  std::pair<const char*, const icon_char_t*>{entity_type::vacuum, icon_t::robot_vacuum},
+  std::pair<const char*, const icon_char_t*>{entity_type::timer, icon_t::timer_outline},
 
-  {entity_type::nav_up, u8"\uE736"}, // arrow-up-bold
-  {entity_type::nav_prev, u8"\uE730"}, // arrow-left-bold
-  {entity_type::nav_next, u8"\uE733"}, //arrow-right-bold
-  {entity_type::itext, u8"\uE69D"}, // format-color-text
-  {entity_type::input_text, u8"\uE5E6"}, // cursor-text
-};
+  std::pair<const char*, const icon_char_t*>{entity_type::nav_up, icon_t::arrow_up_bold},
+  std::pair<const char*, const icon_char_t*>{entity_type::nav_prev, icon_t::arrow_left_bold},
+  std::pair<const char*, const icon_char_t*>{entity_type::nav_next, icon_t::arrow_right_bold},
+  std::pair<const char*, const icon_char_t*>{entity_type::itext, icon_t::format_color_text},
+  std::pair<const char*, const icon_char_t*>{entity_type::input_text, icon_t::cursor_text}, //added
+  std::pair<const char*, const icon_char_t*>{entity_type::text, icon_t::cursor_text}, //added
+  std::pair<const char*, const icon_char_t*>{entity_type::select, icon_t::gesture_tap_button}, //added
+}};
 
 // sensor_mapping_on
-const char_map SENSOR_ON_ICON_MAP {
-  {sensor_type::battery, u8"\uE08D"}, // battery-outline
-  {sensor_type::battery_charging, u8"\uE083"}, // battery-charging
-  {sensor_type::carbon_monoxide, u8"\uF92D"}, // smoke-detector-alert
-  {sensor_type::cold, u8"\uE716"}, // snowflake
-  {sensor_type::connectivity, u8"\uEC53"}, // check-network-outline
-  {sensor_type::door, u8"\uE81B"}, // door-open
-  {sensor_type::garage_door, u8"\uE6D9"}, // garage-open
-  {sensor_type::power, u8"\uE6A4"}, // power-plug
-  {sensor_type::gas, u8"\uE027"}, // alert-circle
-  {sensor_type::problem, u8"\uE027"}, // alert-circle
-  {sensor_type::safety, u8"\uE027"}, // alert-circle
-  {sensor_type::tamper, u8"\uE027"}, // alert-circle
-  {sensor_type::smoke, u8"\uF92F"}, // smoke-detector-variant-alert
-  {sensor_type::heat, u8"\uE237"}, // fire
-  {sensor_type::light, u8"\uE0DF"}, // brightness-7
-  {sensor_type::lock, u8"\uE33E"}, // lock-open
-  {sensor_type::moisture, u8"\uE58B"}, // water
-  {sensor_type::motion, u8"\uED90"}, // motion-sensor
-  {sensor_type::occupancy, u8"\uE2DB"}, // home
-  {sensor_type::opening, u8"\uE762"}, // square-outline
-  {sensor_type::plug, u8"\uE6A4"}, // power-plug
-  {sensor_type::presence, u8"\uE2DB"}, // home
-  {sensor_type::running, u8"\uE409"}, // play
-  {sensor_type::sound, u8"\uE386"}, // music-note
-  {sensor_type::update, u8"\uE3D4"}, // package-up
-  {sensor_type::vibration, u8"\uE565"}, // vibrate
-  {sensor_type::window, u8"\uE5B0"} // window-open
-};
+static constexpr FrozenCharMap<const icon_char_t *, 27> SENSOR_ON_ICON_MAP {{
+  std::pair<const char*, const icon_char_t*>{sensor_type::battery, icon_t::battery_outline},
+  std::pair<const char*, const icon_char_t*>{sensor_type::battery_charging, icon_t::battery_charging},
+  std::pair<const char*, const icon_char_t*>{sensor_type::carbon_monoxide, icon_t::smoke_detector_alert},
+  std::pair<const char*, const icon_char_t*>{sensor_type::cold, icon_t::snowflake},
+  std::pair<const char*, const icon_char_t*>{sensor_type::connectivity, icon_t::check_network_outline},
+  std::pair<const char*, const icon_char_t*>{sensor_type::door, icon_t::door_open},
+  std::pair<const char*, const icon_char_t*>{sensor_type::garage_door, icon_t::garage_open},
+  std::pair<const char*, const icon_char_t*>{sensor_type::power, icon_t::power_plug},
+  std::pair<const char*, const icon_char_t*>{sensor_type::gas, icon_t::alert_circle},
+  std::pair<const char*, const icon_char_t*>{sensor_type::problem, icon_t::alert_circle},
+  std::pair<const char*, const icon_char_t*>{sensor_type::safety, icon_t::alert_circle},
+  std::pair<const char*, const icon_char_t*>{sensor_type::tamper, icon_t::alert_circle},
+  std::pair<const char*, const icon_char_t*>{sensor_type::smoke, icon_t::smoke_detector_variant_alert},
+  std::pair<const char*, const icon_char_t*>{sensor_type::heat, icon_t::fire},
+  std::pair<const char*, const icon_char_t*>{sensor_type::light, icon_t::brightness_7},
+  std::pair<const char*, const icon_char_t*>{sensor_type::lock, icon_t::lock_open},
+  std::pair<const char*, const icon_char_t*>{sensor_type::moisture, icon_t::water},
+  std::pair<const char*, const icon_char_t*>{sensor_type::motion, icon_t::motion_sensor},
+  std::pair<const char*, const icon_char_t*>{sensor_type::occupancy, icon_t::home},
+  std::pair<const char*, const icon_char_t*>{sensor_type::opening, icon_t::square_outline},
+  std::pair<const char*, const icon_char_t*>{sensor_type::plug, icon_t::power_plug},
+  std::pair<const char*, const icon_char_t*>{sensor_type::presence, icon_t::home},
+  std::pair<const char*, const icon_char_t*>{sensor_type::running, icon_t::play},
+  std::pair<const char*, const icon_char_t*>{sensor_type::sound, icon_t::music_note},
+  std::pair<const char*, const icon_char_t*>{sensor_type::update, icon_t::package_up},
+  std::pair<const char*, const icon_char_t*>{sensor_type::vibration, icon_t::vibrate},
+  std::pair<const char*, const icon_char_t*>{sensor_type::window, icon_t::window_open}
+}};
 
 // sensor_mapping_off
-const char_map SENSOR_OFF_ICON_MAP {
-  {sensor_type::battery, u8"\uE078"}, // battery
-  {sensor_type::battery_charging, u8"\uE078"}, // battery
-  {sensor_type::carbon_monoxide, u8"\uE391"}, // smoke-detector
-  {sensor_type::cold, u8"\uE50E"}, // thermometer
-  {sensor_type::connectivity, u8"\uEC5E"}, // close-network-outline
-  {sensor_type::door, u8"\uE81A"}, // door-closed
-  {sensor_type::garage_door, u8"\uE6D8"}, // garage
-  {sensor_type::power, u8"\uE6A5"}, // power-plug-off
-  {sensor_type::gas, u8"\uE132"}, // checkbox-marked-circle
-  {sensor_type::problem, u8"\uE132"}, // checkbox-marked-circle
-  {sensor_type::safety, u8"\uE132"}, // checkbox-marked-circle
-  {sensor_type::tamper, u8"\uE5DF"}, // check-circle
-  {sensor_type::smoke, u8"\uF80A"}, // smoke-detector-variant
-  {sensor_type::heat, u8"\uE50E"}, // thermometer
-  {sensor_type::light, u8"\uE0DD"}, // brightness-5
-  {sensor_type::lock, u8"\uE33D"}, // lock
-  {sensor_type::moisture, u8"\uE58C"}, // water-off
-  {sensor_type::motion, u8"\uF434"}, // motion-sensor-off
-  {sensor_type::occupancy, u8"\uE6A0"}, // home-outline
-  {sensor_type::opening, u8"\uE763"}, // square
-  {sensor_type::plug, u8"\uE6A5"}, // power-plug-off
-  {sensor_type::presence, u8"\uE6A0"}, // home-outline
-  {sensor_type::running, u8"\uE4DA"}, // stop
-  {sensor_type::sound, u8"\uE389"}, // music-note-off
-  {sensor_type::update, u8"\uE3D2"}, // package
-  {sensor_type::vibration, u8"\uE1A0"}, // crop-portrait
-  {sensor_type::window, u8"\uE5AD"}, // window-closed
-};
+static constexpr FrozenCharMap<const icon_char_t *, 27> SENSOR_OFF_ICON_MAP {{
+  std::pair<const char*, const icon_char_t*>{sensor_type::battery, icon_t::battery},
+  std::pair<const char*, const icon_char_t*>{sensor_type::battery_charging, icon_t::battery},
+  std::pair<const char*, const icon_char_t*>{sensor_type::carbon_monoxide, icon_t::smoke_detector},
+  std::pair<const char*, const icon_char_t*>{sensor_type::cold, icon_t::thermometer},
+  std::pair<const char*, const icon_char_t*>{sensor_type::connectivity, icon_t::close_network_outline},
+  std::pair<const char*, const icon_char_t*>{sensor_type::door, icon_t::door_closed},
+  std::pair<const char*, const icon_char_t*>{sensor_type::garage_door, icon_t::garage},
+  std::pair<const char*, const icon_char_t*>{sensor_type::power, icon_t::power_plug_off},
+  std::pair<const char*, const icon_char_t*>{sensor_type::gas, icon_t::checkbox_marked_circle},
+  std::pair<const char*, const icon_char_t*>{sensor_type::problem, icon_t::checkbox_marked_circle},
+  std::pair<const char*, const icon_char_t*>{sensor_type::safety, icon_t::checkbox_marked_circle},
+  std::pair<const char*, const icon_char_t*>{sensor_type::tamper, icon_t::check_circle},
+  std::pair<const char*, const icon_char_t*>{sensor_type::smoke, icon_t::smoke_detector_variant},
+  std::pair<const char*, const icon_char_t*>{sensor_type::heat, icon_t::thermometer},
+  std::pair<const char*, const icon_char_t*>{sensor_type::light, icon_t::brightness_5},
+  std::pair<const char*, const icon_char_t*>{sensor_type::lock, icon_t::lock},
+  std::pair<const char*, const icon_char_t*>{sensor_type::moisture, icon_t::water_off},
+  std::pair<const char*, const icon_char_t*>{sensor_type::motion, icon_t::motion_sensor_off},
+  std::pair<const char*, const icon_char_t*>{sensor_type::occupancy, icon_t::home_outline},
+  std::pair<const char*, const icon_char_t*>{sensor_type::opening, icon_t::square},
+  std::pair<const char*, const icon_char_t*>{sensor_type::plug, icon_t::power_plug_off},
+  std::pair<const char*, const icon_char_t*>{sensor_type::presence, icon_t::home_outline},
+  std::pair<const char*, const icon_char_t*>{sensor_type::running, icon_t::stop},
+  std::pair<const char*, const icon_char_t*>{sensor_type::sound, icon_t::music_note_off},
+  std::pair<const char*, const icon_char_t*>{sensor_type::update, icon_t::package},
+  std::pair<const char*, const icon_char_t*>{sensor_type::vibration, icon_t::crop_portrait},
+  std::pair<const char*, const icon_char_t*>{sensor_type::window, icon_t::window_closed},
+}};
 
 // sensor_mapping
-const char_map SENSOR_ICON_MAP {
-  {sensor_type::apparent_power, u8"\uE240"}, // flash
-  {sensor_type::aqi, u8"\uEA70"}, // smog
-  {sensor_type::battery, u8"\uE078"}, // battery
-  {sensor_type::carbon_dioxide, u8"\uEA70"}, // smog
-  {sensor_type::carbon_monoxide, u8"\uEA70"}, // smog
-  {sensor_type::current, u8"\uE240"}, // flash
-  {sensor_type::date, u8"\uE0EC"}, // calendar
-  {sensor_type::duration, u8"\uF3AA"}, // timer
-  {sensor_type::energy, u8"\uE240"}, // flash
-  {sensor_type::frequency, u8"\uEC4F"}, // chart-bell-curve
-  {sensor_type::gas, u8"\uE646"}, // gas-cylinder
-  {sensor_type::humidity, u8"\uF098"}, // air-humidifier
-  {sensor_type::illuminance, u8"\uE334"}, // lightbulb
-  {sensor_type::monetary, u8"\uE113"}, // cash
-  {sensor_type::nitrogen_dioxide, u8"\uEA70"}, // smog
-  {sensor_type::nitrogen_monoxide, u8"\uEA70"}, // smog
-  {sensor_type::nitrous_oxide, u8"\uEA70"}, // smog
-  {sensor_type::ozone, u8"\uEA70"}, // smog
-  {sensor_type::pm1, u8"\uEA70"}, // smog
-  {sensor_type::pm10, u8"\uEA70"}, // smog
-  {sensor_type::pm25, u8"\uEA70"}, // smog
-  {sensor_type::power_factor, u8"\uE240"}, // flash
-  {sensor_type::power, u8"\uE240"}, // flash
-  {sensor_type::pressure, u8"\uE299"}, // gauge
-  {sensor_type::reactive_power, u8"\uE240"}, // flash
-  {sensor_type::signal_strength, u8"\uE4A1"}, // signal
-  {sensor_type::sulphur_dioxide, u8"\uEA70"}, // smog
-  {sensor_type::temperature, u8"\uE50E"}, // thermometer
-  {sensor_type::timestamp, u8"\uE0EF"}, // calendar-clock
-  {sensor_type::volatile_organic_compounds, u8"\uEA70"}, // smog
-  {sensor_type::voltage, u8"\uE240"} // flash
-};
+static constexpr FrozenCharMap<const icon_char_t *, 31> SENSOR_ICON_MAP {{
+  std::pair<const char*, const icon_char_t*>{sensor_type::apparent_power, icon_t::flash},
+  std::pair<const char*, const icon_char_t*>{sensor_type::aqi, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::battery, icon_t::battery},
+  std::pair<const char*, const icon_char_t*>{sensor_type::carbon_dioxide, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::carbon_monoxide, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::current, icon_t::flash},
+  std::pair<const char*, const icon_char_t*>{sensor_type::date, icon_t::calendar},
+  std::pair<const char*, const icon_char_t*>{sensor_type::duration, icon_t::timer},
+  std::pair<const char*, const icon_char_t*>{sensor_type::energy, icon_t::flash},
+  std::pair<const char*, const icon_char_t*>{sensor_type::frequency, icon_t::chart_bell_curve},
+  std::pair<const char*, const icon_char_t*>{sensor_type::gas, icon_t::gas_cylinder},
+  std::pair<const char*, const icon_char_t*>{sensor_type::humidity, icon_t::air_humidifier},
+  std::pair<const char*, const icon_char_t*>{sensor_type::illuminance, icon_t::lightbulb},
+  std::pair<const char*, const icon_char_t*>{sensor_type::monetary, icon_t::cash},
+  std::pair<const char*, const icon_char_t*>{sensor_type::nitrogen_dioxide, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::nitrogen_monoxide, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::nitrous_oxide, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::ozone, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::pm1, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::pm10, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::pm25, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::power_factor, icon_t::flash},
+  std::pair<const char*, const icon_char_t*>{sensor_type::power, icon_t::flash},
+  std::pair<const char*, const icon_char_t*>{sensor_type::pressure, icon_t::gauge},
+  std::pair<const char*, const icon_char_t*>{sensor_type::reactive_power, icon_t::flash},
+  std::pair<const char*, const icon_char_t*>{sensor_type::signal_strength, icon_t::signal},
+  std::pair<const char*, const icon_char_t*>{sensor_type::sulphur_dioxide, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::temperature, icon_t::thermometer},
+  std::pair<const char*, const icon_char_t*>{sensor_type::timestamp, icon_t::calendar_clock},
+  std::pair<const char*, const icon_char_t*>{sensor_type::volatile_organic_compounds, icon_t::smog},
+  std::pair<const char*, const icon_char_t*>{sensor_type::voltage, icon_t::flash}
+}};
 
-// cover_mapping
-const char_list_map COVER_MAP {
-  // "device_class": ("icon-open", "icon-closed", "icon-cover-open", "icon-cover-close")
-  {entity_cover_type::awning, {u8"\uE5B0", u8"\uE5AD", u8"\uE05C", u8"\uE044"}}, // window-open, window-closed, arrow-up, arrow-down
-  {entity_cover_type::blind, {u8"\uF010", u8"\uE0AB", u8"\uE05C", u8"\uE044"}}, // blinds-open, blinds, arrow-up
-  {entity_cover_type::curtain, {u8"\uF845", u8"\uF846", u8"\uE84D", u8"\uE84B"}}, // curtains, curtains-closed, arrow-expand-horizontal, arrow-collapse-horizontal
-  {entity_cover_type::damper, {u8"\uE12E", u8"\uEAA4", u8"\uE05C", u8"\uE044"}}, // checkbox-blank-circle, circle-slice-8, arrow-up
-  {entity_cover_type::door, {u8"\uE81B", u8"\uE81A", u8"\uE84D", u8"\uE84B"}}, // door-open, door-closed, arrow-expand-horizontal, arrow-collapse-horizontal
-  {entity_cover_type::garage, {u8"\uE6D9", u8"\uE6D8", u8"\uE05C", u8"\uE044"}}, // garage-open, garage, arrow-up
-  {entity_cover_type::gate, {u8"\uF169", u8"\uE298", u8"\uE84D", u8"\uE84B"}}, // gate-open, gate, arrow-expand-horizontal, arrow-collapse-horizontal
-  {entity_cover_type::shade, {u8"\uF010", u8"\uE0AB", u8"\uE05C", u8"\uE044"}}, // blinds-open, blinds, arrow-up
-  {entity_cover_type::shutter, {u8"\uF11D", u8"\uF11B", u8"\uE05C", u8"\uE044"}}, // window-shutter-open, window-shutter, arrow-up
-  {entity_cover_type::window, {u8"\uE5B0", u8"\uE5AD", u8"\uE05C", u8"\uE044"}}, // window-open, window-closed, arrow-up
-};
-
-// see: 
+// A map of icons and their respective color for each weather condition
+// see:
 //  - https://www.home-assistant.io/integrations/weather/
-//  - 'get_entity_color' function in: https://github.com/joBr99/nspanel-lovelace-ui/blob/main/apps/nspanel-lovelace-ui/luibackend/pages.py
+//  - 'get_entity_color' function in:
+//  https://github.com/joBr99/nspanel-lovelace-ui/blob/main/apps/nspanel-lovelace-ui/luibackend/pages.py
 //  - icon lookup:
 //      - codepoint values: https://docs.nspanel.pky.eu/icon-cheatsheet.html
-//      - icon mapping: https://github.com/joBr99/nspanel-lovelace-ui/blob/main/apps/nspanel-lovelace-ui/luibackend/icon_mapping.py
+//      - icon mapping:
+//      https://github.com/joBr99/nspanel-lovelace-ui/blob/main/apps/nspanel-lovelace-ui/luibackend/icon_mapping.py
 //      - mdi icons: https://pictogrammers.com/library/mdi/
 //  - color lookup:
 //      - https://rgbcolorpicker.com/565
-const char_icon_map WEATHER_ICON_MAP {
-  {weather_type::sunny, {u8"\uE598", 65504u}}, //mdi:0599,#ffff00
-  {weather_type::windy, {u8"\uE59C", 38066u}}, //mdi:059D,#949694
-  {weather_type::windy_variant, {u8"\uE59D", 64495u}}, //mdi:059E,#ff7d7b
-  {weather_type::cloudy, {u8"\uE58F", 31728u}}, //mdi:0590,#7b7d84
-  {weather_type::partlycloudy, {u8"\uE594", 38066u}}, //mdi:0595,#949694
-  {weather_type::clear_night, {u8"\uE593", 38060u}}, //mdi:0594,#949663 // weather-night
-  {weather_type::exceptional, {u8"\uE5D5", 63878u}}, //mdi:05D6,#ff3131 // alert-circle-outline
-  {weather_type::rainy, {u8"\uE596", 25375u}}, //mdi:0597,#6361ff
-  {weather_type::pouring, {u8"\uE595", 12703u}}, //mdi:0596,#3131ff
-  {weather_type::snowy, {u8"\uE597", 65535u}}, //mdi:E598,#ffffff
-  {weather_type::snowy_rainy, {u8"\uEF34", 38079u}}, //mdi:067F,#9496ff
-  {weather_type::fog, {u8"\uE590", 38066u}}, //mdi:0591,#949694
-  {weather_type::hail, {u8"\uE591", 65535u}}, //mdi:0592,#ffffff
-  {weather_type::lightning, {u8"\uE592", 65120u}}, //mdi:0593,#ffce00
-  {weather_type::lightning_rainy, {u8"\uE67D", 50400u}} //mdi:067E,#c59e00
-};
+static constexpr FrozenCharMap<Icon, 15> WEATHER_ICON_MAP {{
+  std::pair<const char*, Icon>{weather_type::sunny,           Icon{icon_t::weather_sunny, 65504u}}, // mdi:0599,#ffff00
+  std::pair<const char*, Icon>{weather_type::windy,           Icon{icon_t::weather_windy, 38066u}}, // mdi:059D,#949694
+  std::pair<const char*, Icon>{weather_type::windy_variant,   Icon{icon_t::weather_windy_variant, 64495u}}, // mdi:059E,#ff7d7b
+  std::pair<const char*, Icon>{weather_type::cloudy,          Icon{icon_t::weather_cloudy, 31728u}}, // mdi:0590,#7b7d84
+  std::pair<const char*, Icon>{weather_type::partlycloudy,    Icon{icon_t::weather_partly_cloudy, 38066u}}, // mdi:0595,#949694
+  std::pair<const char*, Icon>{weather_type::clear_night,     Icon{icon_t::weather_night, 38060u}}, // mdi:0594,#949663
+  std::pair<const char*, Icon>{weather_type::exceptional,     Icon{icon_t::alert_circle_outline, 63878u}}, // mdi:05D6,#ff3131
+  std::pair<const char*, Icon>{weather_type::rainy,           Icon{icon_t::weather_rainy, 25375u}}, // mdi:0597,#6361ff
+  std::pair<const char*, Icon>{weather_type::pouring,         Icon{icon_t::weather_pouring, 12703u}}, // mdi:0596,#3131ff
+  std::pair<const char*, Icon>{weather_type::snowy,           Icon{icon_t::weather_snowy, 65535u}}, // mdi:E598,#ffffff
+  std::pair<const char*, Icon>{weather_type::snowy_rainy,     Icon{icon_t::weather_partly_snowy_rainy, 38079u}}, // mdi:067F,#9496ff
+  std::pair<const char*, Icon>{weather_type::fog,             Icon{icon_t::weather_fog, 38066u}}, // mdi:0591,#949694
+  std::pair<const char*, Icon>{weather_type::hail,            Icon{icon_t::weather_hail, 65535u}}, // mdi:0592,#ffffff
+  std::pair<const char*, Icon>{weather_type::lightning,       Icon{icon_t::weather_lightning, 65120u}}, // mdi:0593,#ffce00
+  std::pair<const char*, Icon>{weather_type::lightning_rainy, Icon{icon_t::weather_lightning_rainy, 50400u}} // mdi:067E,#c59e00
+}};
 
-const char_map ENTITY_RENDER_TYPE_MAP {
-  {entity_type::cover, entity_render_type::shutter},
-  {entity_type::light, entity_type::light},
+// climate_mapping
+static constexpr FrozenCharMap<const icon_char_t *, 7> CLIMATE_ICON_MAP {{
+  std::pair<const char*, const icon_char_t*>{entity_state::auto_, icon_t::calendar_sync},
+  std::pair<const char*, const icon_char_t*>{entity_state::heat_cool, icon_t::calendar_sync},
+  std::pair<const char*, const icon_char_t*>{entity_state::heat, icon_t::fire},
+  std::pair<const char*, const icon_char_t*>{entity_state::off, icon_t::power},
+  std::pair<const char*, const icon_char_t*>{entity_state::cool, icon_t::snowflake},
+  std::pair<const char*, const icon_char_t*>{entity_state::dry, icon_t::water_percent},
+  std::pair<const char*, const icon_char_t*>{entity_state::fan_only, icon_t::fan},
+}};
 
-  {entity_type::switch_, entity_type::switch_},
-  {entity_type::input_boolean, entity_type::switch_},
-  {entity_type::automation, entity_type::switch_},
+static constexpr FrozenCharMap<const icon_char_t *, 9> MEDIA_TYPE_ICON_MAP {{
+  std::pair<const char*, const icon_char_t*>{entity_state::off, icon_t::speaker_off},
+  std::pair<const char*, const icon_char_t*>{ha_attr_media_content_type::music, icon_t::music},
+  std::pair<const char*, const icon_char_t*>{ha_attr_media_content_type::tvshow, icon_t::movie},
+  std::pair<const char*, const icon_char_t*>{ha_attr_media_content_type::video, icon_t::video},
+  std::pair<const char*, const icon_char_t*>{ha_attr_media_content_type::episode, icon_t::playlist_play}, // (originally: icon_t::alert_circle_outline)
+  std::pair<const char*, const icon_char_t*>{ha_attr_media_content_type::channel, icon_t:: playlist_star}, // (OR radio-tower E43A / broadcast F71F?) (originally: icon_t::alert_circle_outline)
+  std::pair<const char*, const icon_char_t*>{ha_attr_media_content_type::playlist, icon_t::playlist_music}, // (originally: icon_t::alert_circle_outline)
+  std::pair<const char*, const icon_char_t*>{ha_attr_media_content_type::app, icon_t::open_in_app}, // newly added!
+  std::pair<const char*, const icon_char_t*>{ha_attr_media_content_type::url, icon_t::link_box_outline}, // newly added! (OR cast E117?)
+}};
 
-  {entity_type::fan, entity_type::fan},
+const FrozenCharMap<Icon, 10> ALARM_ICON_MAP {{
+  std::pair<const char*, Icon>{entity_state::unknown, Icon{icon_t::shield_off, 0x0CE6u}}, //green
+  std::pair<const char*, Icon>{entity_state::disarmed, Icon{icon_t::shield_off, 0x0CE6u}}, //green
+  std::pair<const char*, Icon>{entity_state::armed_home, Icon{icon_t::shield_home, 0xE243u}}, //red
+  std::pair<const char*, Icon>{entity_state::armed_away, Icon{icon_t::shield_lock, 0xE243u}}, //red
+  std::pair<const char*, Icon>{entity_state::armed_night, Icon{icon_t::shield_moon, 0xE243u}}, //red. icon was E593:weather-night
+  std::pair<const char*, Icon>{entity_state::armed_vacation, Icon{icon_t::shield_airplane, 0xE243u}}, //red
+  std::pair<const char*, Icon>{entity_state::armed_custom_bypass, Icon{icon_t::shield, 0xE243u}}, //red
+  std::pair<const char*, Icon>{entity_state::arming, Icon{icon_t::shield, 0xED80u}}, //orange
+  std::pair<const char*, Icon>{entity_state::pending, Icon{icon_t::shield, 0xED80u}}, //orange
+  std::pair<const char*, Icon>{entity_state::triggered, Icon{icon_t::bell_ring, 0xE243u}}, //red
+}};
+
+// cover_mapping
+static constexpr FrozenCharMap<std::array<const icon_char_t *, 4>, 10> COVER_MAP {{
+  // "device_class": ("icon-open", "icon-closed", "icon-cover-open", "icon-cover-close")
+  std::pair<const char*, std::array<const icon_char_t*, 4>>{entity_cover_type::awning, {icon_t::window_open, icon_t::window_closed, icon_t::arrow_up, icon_t::arrow_down}},
+  std::pair<const char*, std::array<const icon_char_t*, 4>>{entity_cover_type::blind, {icon_t::blinds_open, icon_t::blinds, icon_t::arrow_up, icon_t::arrow_down}},
+  std::pair<const char*, std::array<const icon_char_t*, 4>>{entity_cover_type::curtain, {icon_t::curtains, icon_t::curtains_closed, icon_t::arrow_expand_horizontal, icon_t::arrow_collapse_horizontal}},
+  std::pair<const char*, std::array<const icon_char_t*, 4>>{entity_cover_type::damper, {icon_t::checkbox_blank_circle, icon_t::circle_slice_8, icon_t::arrow_up, icon_t::arrow_down}},
+  std::pair<const char*, std::array<const icon_char_t*, 4>>{entity_cover_type::door, {icon_t::door_open, icon_t::door_closed, icon_t::arrow_expand_horizontal, icon_t::arrow_collapse_horizontal}},
+  std::pair<const char*, std::array<const icon_char_t*, 4>>{entity_cover_type::garage, {icon_t::garage_open, icon_t::garage, icon_t::arrow_up, icon_t::arrow_down}},
+  std::pair<const char*, std::array<const icon_char_t*, 4>>{entity_cover_type::gate, {icon_t::gate_open, icon_t::gate, icon_t::arrow_expand_horizontal, icon_t::arrow_collapse_horizontal}},
+  std::pair<const char*, std::array<const icon_char_t*, 4>>{entity_cover_type::shade, {icon_t::blinds_open, icon_t::blinds, icon_t::arrow_up, icon_t::arrow_down}},
+  std::pair<const char*, std::array<const icon_char_t*, 4>>{entity_cover_type::shutter, {icon_t::window_shutter_open, icon_t::window_shutter, icon_t::arrow_up, icon_t::arrow_down}},
+  std::pair<const char*, std::array<const icon_char_t*, 4>>{entity_cover_type::window, {icon_t::window_open, icon_t::window_closed, icon_t::arrow_up, icon_t::arrow_down}},
+}};
+
+static constexpr FrozenCharMap<const char *, 29> ENTITY_RENDER_TYPE_MAP {{
+  std::pair<const char*, const char*>{entity_type::cover, entity_render_type::shutter},
+  std::pair<const char*, const char*>{entity_type::light, entity_type::light},
+
+  std::pair<const char*, const char*>{entity_type::switch_, entity_type::switch_},
+  std::pair<const char*, const char*>{entity_type::input_boolean, entity_type::switch_},
+  std::pair<const char*, const char*>{entity_type::automation, entity_type::switch_},
+
+  std::pair<const char*, const char*>{entity_type::fan, entity_type::fan},
   
-  {entity_type::button, entity_type::button},
-  {entity_type::input_button, entity_type::button},
-  {entity_type::scene, entity_type::button},
-  {entity_type::script, entity_type::button},
-  {entity_type::lock, entity_type::button},
-  {entity_type::vacuum, entity_type::button},
-  {entity_type::navigate, entity_type::button},
-  {entity_type::service, entity_type::button},
+  std::pair<const char*, const char*>{entity_type::button, entity_type::button},
+  std::pair<const char*, const char*>{entity_type::input_button, entity_type::button},
+  std::pair<const char*, const char*>{entity_type::scene, entity_type::button},
+  std::pair<const char*, const char*>{entity_type::script, entity_type::button},
+  std::pair<const char*, const char*>{entity_type::lock, entity_type::button},
+  std::pair<const char*, const char*>{entity_type::vacuum, entity_type::button},
+  std::pair<const char*, const char*>{entity_type::navigate, entity_type::button},
+  std::pair<const char*, const char*>{entity_type::service, entity_type::button},
 
-  {entity_type::number, entity_type::number},
-  {entity_type::input_number, entity_type::number},
+  std::pair<const char*, const char*>{entity_type::number, entity_type::number},
+  std::pair<const char*, const char*>{entity_type::input_number, entity_type::number},
 
-  {entity_type::input_select, entity_render_type::input_sel},
-  {entity_type::select, entity_render_type::input_sel},
+  std::pair<const char*, const char*>{entity_type::input_select, entity_render_type::input_sel},
+  std::pair<const char*, const char*>{entity_type::select, entity_render_type::input_sel},
   
-  {entity_type::itext, entity_render_type::text},
-  {entity_type::sensor, entity_render_type::text},
-  {entity_type::binary_sensor, entity_render_type::text},
-  {entity_type::input_text, entity_render_type::text},
-  {entity_type::alarm_control_panel, entity_render_type::text},
-  {entity_type::sun, entity_render_type::text},
-  {entity_type::person, entity_render_type::text},
-  {entity_type::climate, entity_render_type::text},
-  {entity_type::weather, entity_render_type::text},
+  std::pair<const char*, const char*>{entity_type::itext, entity_render_type::text},
+  std::pair<const char*, const char*>{entity_type::sensor, entity_render_type::text},
+  std::pair<const char*, const char*>{entity_type::binary_sensor, entity_render_type::text},
+  std::pair<const char*, const char*>{entity_type::input_text, entity_render_type::text},
+  std::pair<const char*, const char*>{entity_type::alarm_control_panel, entity_render_type::text},
+  std::pair<const char*, const char*>{entity_type::sun, entity_render_type::text},
+  std::pair<const char*, const char*>{entity_type::person, entity_render_type::text},
+  std::pair<const char*, const char*>{entity_type::climate, entity_render_type::text},
+  std::pair<const char*, const char*>{entity_type::weather, entity_render_type::text},
 
-  {entity_type::timer, entity_type::timer},
-  {entity_type::media_player, entity_render_type::media_pl},
-};
+  std::pair<const char*, const char*>{entity_type::timer, entity_type::timer},
+  std::pair<const char*, const char*>{entity_type::media_player, entity_render_type::media_pl},
+}};
 
 inline const char *get_entity_type(const std::string &entity_id) {
   auto pos = entity_id.find('.');
@@ -869,6 +1034,7 @@ inline const char *get_entity_type(const std::string &entity_id) {
   else if (type == entity_type::cover) return entity_type::cover;
   else if (type == entity_type::sensor) return entity_type::sensor;
   else if (type == entity_type::binary_sensor) return entity_type::binary_sensor;
+  else if (type == entity_type::text) return entity_type::text;
   else if (type == entity_type::input_text) return entity_type::input_text;
   else if (type == entity_type::select) return entity_type::select;
   else if (type == entity_type::alarm_control_panel) return entity_type::alarm_control_panel;
