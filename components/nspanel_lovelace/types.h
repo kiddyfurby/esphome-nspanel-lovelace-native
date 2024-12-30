@@ -199,6 +199,7 @@ struct entity_state {
   static constexpr const char* not_home = "not_home";
   // timer
   static constexpr const char* idle = "idle";
+  static constexpr const char* active = "active";
   // climate
   static constexpr const char* cool = "cool";
   static constexpr const char* dry = "dry";
